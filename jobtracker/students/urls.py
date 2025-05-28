@@ -1,0 +1,36 @@
+from django.contrib import admin
+from django.urls import path, include
+from . import views
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', views.welcome, name='welcome'),  # This makes / go to the welcome page
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('applications/', views.applications, name='applications'),
+    path('edit/<int:pk>/', views.edit_application, name='edit_application'),
+    path('delete/<int:pk>/', views.delete_application, name='delete_application'),
+    path('targets/', views.targets, name='targets'),
+    path('targets/edit/<int:pk>/', views.edit_target, name='edit_target'),
+    path('targets/delete/<int:pk>/', views.delete_target, name='delete_target'),
+    path('networking/', views.networking, name='networking'),
+    path('networking/edit/<int:pk>/', views.edit_contact, name='edit_contact'),
+    path('networking/delete/<int:pk>/', views.delete_contact, name='delete_contact'),
+    path('register/', views.register, name='register'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('profile/', views.profile, name='profile'),
+    path('tutorial/', views.tutorial, name='tutorial'),
+    path('welcome/', views.welcome, name='welcome'),
+    path('delete-profile/', views.delete_profile, name='delete_profile'),
+    path('direct-approach/', views.direct_approach, name='direct_approach'),
+    path('direct-approach/edit/<int:pk>/', views.edit_direct_approach, name='edit_direct_approach'),
+    path('direct-approach/delete/<int:pk>/', views.delete_direct_approach, name='delete_direct_approach'),
+    path('recruiters/', views.recruiters, name='recruiters'),
+    path('recruiters/edit/<int:pk>/', views.edit_recruiter, name='edit_recruiter'),
+    path('recruiters/delete/<int:pk>/', views.delete_recruiter, name='delete_recruiter'),
+    path('interviews/', views.interviews, name='interviews'),
+    path('interviews/edit/<int:pk>/', views.edit_interview, name='edit_interview'),
+    path('interviews/delete/<int:pk>/', views.delete_interview, name='delete_interview'),
+    path('linkedin-posts/', views.linkedin_posts, name='linkedin_posts'),
+    path('networking-questions/', views.networking_questions, name='networking_questions'),
+]

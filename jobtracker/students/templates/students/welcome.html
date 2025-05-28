@@ -1,0 +1,54 @@
+{% extends "students/base.html" %}
+{% load static %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+<div class="d-flex h-100 text-center align-items-center justify-content-center" style="min-height: 80vh;">
+  <div class="cover-container w-100 mb-5">
+    <main class="cover mx-auto">
+      <div class="mb-4">
+        <img src="{% static 'students/job-search-tracker.jpg' %}" alt="Job Tracker Banner" class="img-fluid rounded shadow" style="max-width: 100%; height: auto;">
+      </div>
+      
+      <h1 class="cover-heading mb-2">Welcome {{ user.first_name }}! <span style="font-size:2rem;">🚀</span></h1>
+      <p class="lead mb-1">
+        This is your <span class="fw-semibold text-primary">Job Application Tracker</span>.<br>
+        Stay organised, set your goals, and reach your next career milestone!
+      </p>
+      <div class="mt-5 text-start mx-auto" style="max-width: 600px;">
+        <h5>Quick Start Guide</h5>
+        <ul>
+          <li><strong>Dashboard:</strong> See a summary of your job search progress.</li>
+          <li><strong>Job Applications:</strong> Add, edit, and track your applications.</li>
+          <li><strong>Activity Targets:</strong> Set weekly/monthly goals for your job search activities.</li>
+          <li><strong>Networking:</strong> Log your networking contacts and outcomes.</li>
+          <li><strong>Profile:</strong> Update your LinkedIn and GitHub links for easy reference.</li>
+        </ul>
+        <p>
+          For more help, contact support or check the FAQ section.
+        </p>
+        <!-- Tutorial Modal Trigger Button -->
+        <button type="button" class="btn btn-success btn-lg mt-2" data-bs-toggle="modal" data-bs-target="#tutorialModal">
+          🎥 Watch the Tutorial
+        </button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Tutorial Modal (keep this as before) -->
+<div class="modal fade" id="tutorialModal" tabindex="-1" aria-labelledby="tutorialModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="tutorialModalLabel">Job Tracker Tutorial</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="ratio ratio-16x9">
+          <iframe src="https://www.youtube.com/embed/0Wr5R5u3MjA" title="Tutorial Video" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

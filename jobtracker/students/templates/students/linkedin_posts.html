@@ -1,0 +1,61 @@
+{% extends "students/base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}LinkedIn Posts{% endblock %}
+{% block content %}
+<h2>LinkedIn Posts</h2>
+<div class="row align-items-center section-toolbar">
+  <div class="col-auto">
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addLinkedInPostModal">
+      + Add LinkedIn Post
+    </button>
+  </div>
+  <div class="col"></div>
+  <div class="col-auto">
+    <form method="get" class="d-flex">
+      <input type="text" name="q" class="form-control me-2" placeholder="Search..." value="{{ query }}">
+      <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+      <a href="{% url 'linkedin_posts' %}" class="btn btn-outline-secondary">Clear</a>
+    </form>
+  </div>
+</div>
+<div class="table-responsive mt-3">
+  <table class="table table-striped table-bordered">
+    <thead>
+      <tr>
+        <th>Date Posted</th>
+        <th>Subject</th>
+        <th>Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in posts %}
+      <tr>
+        <td>{{ p.date_posted }}</td>
+        <td>{{ p.subject }}</td>
+        <td>{{ p.get_post_type_display }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3">No LinkedIn posts yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<!-- Add Modal -->
+<div class="modal fade" id="addLinkedInPostModal" tabindex="-1" aria-labelledby="addLinkedInPostModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addLinkedInPostModalLabel">Add LinkedIn Post</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" autocomplete="off">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <button type="submit" class="btn btn-success w-100">Add</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

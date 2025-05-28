@@ -1,0 +1,34 @@
+{% extends "students/base.html" %}
+{% block title %}Tutorial{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow mt-5 mb-5">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">How to Use the Job Application Tracker</h4>
+            </div>
+            <div class="card-body">
+                <p class="lead">
+                    Welcome! Watch the video below for a walkthrough of the main features and tips for getting the most out of your tracker.
+                </p>
+                <div class="ratio ratio-16x9 mb-4">
+                    <iframe src="https://www.youtube.com/embed/0Wr5R5u3MjA"
+                            title="Job Tracker Tutorial"
+                            allowfullscreen></iframe>
+                </div>
+                <h5>Quick Start Guide</h5>
+                <ul>
+                    <li><strong>Dashboard:</strong> See a summary of your job search progress.</li>
+                    <li><strong>Job Applications:</strong> Add, edit, and track your applications.</li>
+                    <li><strong>Activity Targets:</strong> Set weekly/monthly goals for your job search activities.</li>
+                    <li><strong>Networking:</strong> Log your networking contacts and outcomes.</li>
+                    <li><strong>Profile:</strong> Update your LinkedIn and GitHub links for easy reference.</li>
+                </ul>
+                <p>
+                    For more help, contact support or check the FAQ section.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

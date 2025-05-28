@@ -1,0 +1,76 @@
+{% extends "students/base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Direct Approach{% endblock %}
+{% block content %}
+<h2>Direct Approach</h2>
+<div class="row align-items-center section-toolbar">
+  <div class="col-auto">
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDirectApproachModal">
+      + Add Direct Approach
+    </button>
+  </div>
+  <div class="col"></div>
+  <div class="col-auto">
+    <form method="get" class="d-flex">
+      <input type="text" name="q" class="form-control me-2" placeholder="Search..." value="{{ query }}">
+      <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+      <a href="{% url 'direct_approach' %}" class="btn btn-outline-secondary">Clear</a>
+    </form>
+  </div>
+</div>
+<div class="table-responsive mt-3">
+  <table class="table table-striped table-bordered">
+    <thead>
+      <tr>
+        <th>Targeting</th>
+        <th>Location</th>
+        <th>Contact</th>
+        <th>Reached Out</th>
+        <th>Date</th>
+        <th>Approach Method</th>
+        <th>Response</th>
+        <th>Notes</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in approaches %}
+      <tr>
+        <td>{{ a.targeting }}</td>
+        <td>{{ a.location }}</td>
+        <td>{{ a.contact }}</td>
+        <td>{{ a.get_reached_out_display }}</td>
+        <td>{{ a.date }}</td>
+        <td>{{ a.approach_method }}</td>
+        <td>{{ a.get_response_display }}</td>
+        <td>{{ a.notes }}</td>
+        <td>
+          <a href="{% url 'edit_direct_approach' a.pk %}" class="btn btn-sm btn-warning">Edit</a>
+          <a href="{% url 'delete_direct_approach' a.pk %}" class="btn btn-sm btn-danger">Delete</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9">No direct approaches yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<!-- Add Modal -->
+<div class="modal fade" id="addDirectApproachModal" tabindex="-1" aria-labelledby="addDirectApproachModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addDirectApproachModalLabel">Add Direct Approach</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" autocomplete="off">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <button type="submit" class="btn btn-success w-100">Add</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

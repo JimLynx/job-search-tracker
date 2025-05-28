@@ -1,0 +1,225 @@
+/* Brand Colour Variables */
+:root {
+  --neutral-0: #FFFFFF;
+  --neutral-100: #F4F7FE;
+  --neutral-200: #E5EBFA;
+  --neutral-400: #A5AEC5;
+  --neutral-900: #090843;
+  --orange-300: #FFD1B3;
+  --orange-500: #FF6400;
+  --orange-700: #CC5200;
+}
+
+/* General */
+body {
+  background-color: var(--neutral-100);
+  color: var(--neutral-900);
+  font-family: 'Montserrat', Arial, Helvetica, sans-serif !important;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  color: var(--neutral-900);
+}
+
+/* Links */
+a, .link-primary {
+  color: var(--orange-500);
+}
+a:hover, .link-primary:hover {
+  color: var(--orange-700);
+}
+
+/* Buttons */
+.btn-primary,
+.btn-primary:active,
+.btn-primary:focus,
+.btn-primary:hover {
+  background-color: var(--orange-500) !important;
+  border-color: var(--orange-500) !important;
+  color: #fff !important;
+}
+.btn-primary:disabled,
+.btn-primary.disabled {
+  background-color: var(--orange-300) !important;
+  border-color: var(--orange-300) !important;
+  color: #fff !important;
+}
+.btn-outline-primary {
+  color: var(--orange-500) !important;
+  border-color: var(--orange-500) !important;
+  background: transparent !important;
+}
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background-color: var(--orange-500) !important;
+  color: #fff !important;
+  border-color: var(--orange-500) !important;
+}
+.btn-success,
+.btn-success:active,
+.btn-success:focus,
+.btn-success:hover {
+  background-color: var(--orange-500) !important;
+  border-color: var(--orange-500) !important;
+  color: #fff !important;
+}
+.btn-success:disabled,
+.btn-success.disabled {
+  background-color: var(--orange-300) !important;
+  border-color: var(--orange-300) !important;
+  color: #fff !important;
+}
+
+/* Backgrounds */
+.bg-primary {
+  background-color: var(--orange-500) !important;
+  color: #fff !important;
+}
+.bg-secondary {
+  background-color: var(--neutral-400) !important;
+  color: #fff !important;
+}
+
+/* Text */
+.text-primary {
+  color: var(--orange-500) !important;
+}
+.text-secondary {
+  color: var(--neutral-400) !important;
+}
+
+/* Cards */
+.card {
+  background-color: var(--neutral-0);
+  border: 1px solid var(--neutral-200);
+}
+.card-header.bg-primary {
+  background-color: var(--orange-500) !important;
+  color: var(--neutral-0) !important;
+}
+
+/* Alerts */
+.alert-primary {
+  background-color: var(--orange-300) !important;
+  color: var(--orange-700) !important;
+  border-color: var(--orange-500) !important;
+}
+.alert-secondary {
+  background-color: var(--neutral-200) !important;
+  color: var(--neutral-900) !important;
+  border-color: var(--neutral-400) !important;
+}
+
+/* Badges */
+.badge.bg-primary,
+.badge-primary {
+  background-color: var(--orange-500) !important;
+  color: #fff !important;
+}
+.badge.bg-secondary,
+.badge-secondary {
+  background-color: var(--neutral-400) !important;
+  color: #fff !important;
+}
+
+/* Nav Pills & Tabs */
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  background-color: var(--orange-500) !important;
+  color: #fff !important;
+}
+.nav-tabs {
+    border-bottom: 2px solid #b0b0b0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    background: #f8f9fa;
+    border-radius: 0.5rem 0.5rem 0 0;
+    padding: 0.25rem 0.5rem;
+}
+.nav-tabs .nav-link {
+    border: 1px solid transparent;
+    border-radius: 0.5rem 0.5rem 0 0;
+    margin-right: 0.25rem;
+    color: #495057;
+    background: none;
+    transition: background 0.2s, color 0.2s;
+}
+.nav-tabs .nav-link.active {
+    color: #0d6efd;
+    background: #fff;
+    border-color: #b0b0b0 #b0b0b0 #fff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    z-index: 2;
+}
+
+/* Progress bars */
+.progress-bar.bg-primary,
+.progress-bar {
+  background-color: var(--orange-500) !important;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Pagination */
+.page-link,
+.page-link:focus {
+  color: var(--orange-500);
+}
+.page-item.active .page-link {
+  background-color: var(--orange-500);
+  border-color: var(--orange-500);
+  color: #fff;
+}
+
+/* Forms */
+.form-check-input:checked {
+  background-color: var(--orange-500) !important;
+  border-color: var(--orange-500) !important;
+}
+.form-control:focus {
+  border-color: var(--orange-500) !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 100, 0, 0.15) !important;
+}
+
+/* Dropdowns */
+.dropdown-item.active, .dropdown-item:active {
+  background-color: var(--orange-500) !important;
+  color: #fff !important;
+}
+
+/* Cover page styles */
+.cover-container {
+    max-width: 48em;
+}
+.cover {
+    padding: 2rem 1.5rem;
+    background: linear-gradient(90deg, #e3f0ff 0%, #f8f9fa 100%);
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,.05);
+}
+.cover-heading {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+.cover-buttons .btn {
+    min-width: 180px;
+    margin: 0.5rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+    font-family: 'Montserrat', Arial, Helvetica, sans-serif;
+    font-weight: 700;
+}
+
+.section-toolbar {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+h2 + .section-toolbar {
+    margin-top: 1.5rem;
+}
