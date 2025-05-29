@@ -1,0 +1,45 @@
+{% extends "students/base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Student Progress Overview</h2>
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle bg-white shadow-sm">
+      <thead class="table-primary">
+        <tr>
+          <th>Student</th>
+          <th>Targets</th>
+          <th>Contacts</th>
+          <th>Applications</th>
+          <th>Direct Approach</th>
+          <th>Recruiters</th>
+          <th>Interviews</th>
+          <th>LinkedIn Posts</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in progress_data %}
+        <tr>
+          <td>
+            {{ row.student.get_full_name|default:row.student.username }}
+            <br>
+            <small class="text-muted">{{ row.student.email }}</small>
+          </td>
+          <td>{{ row.num_targets }} / {{ row.max_targets }}</td>
+          <td>{{ row.num_contacts }} / {{ row.max_contacts }}</td>
+          <td>{{ row.num_applications }} / {{ row.max_applications }}</td>
+          <td>{{ row.num_direct_approach }} / {{ row.max_direct_approach }}</td>
+          <td>{{ row.num_recruiters }} / {{ row.max_recruiters }}</td>
+          <td>{{ row.num_interviews }} / {{ row.max_interviews }}</td>
+          <td>{{ row.num_linkedin_posts }} / {{ row.max_linkedin_posts }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center">No student data available.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

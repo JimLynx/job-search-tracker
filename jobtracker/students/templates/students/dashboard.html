@@ -171,6 +171,10 @@
           <li class="list-group-item">No recent applications.</li>
       {% endfor %}
   </ul>
+
+  {% if user.is_staff %}
+    <a href="{% url 'admin_dashboard' %}">Admin Dashboard</a>
+  {% endif %}
 </div>
 {% endblock %}
 {% block extra_js %}

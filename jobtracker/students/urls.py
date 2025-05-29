@@ -33,4 +33,5 @@ urlpatterns = [
     path('interviews/delete/<int:pk>/', views.delete_interview, name='delete_interview'),
     path('linkedin-posts/', views.linkedin_posts, name='linkedin_posts'),
     path('networking-questions/', views.networking_questions, name='networking_questions'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
 ]

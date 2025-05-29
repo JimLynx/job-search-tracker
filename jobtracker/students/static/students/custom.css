@@ -12,7 +12,7 @@
 
 /* General */
 body {
-  background-color: var(--neutral-100);
+  background: linear-gradient(120deg, #e3eafc 0%, #f5f7fa 100%);
   color: var(--neutral-900);
   font-family: 'Montserrat', Arial, Helvetica, sans-serif !important;
 }
@@ -222,4 +222,62 @@ h1, h2, h3, h4, h5, h6 {
 
 h2 + .section-toolbar {
     margin-top: 1.5rem;
+}
+
+/* Modern tech login card */
+.custom-form-card {
+  border-radius: 20px;
+  box-shadow: 0 4px 32px rgba(30, 41, 59, 0.12);
+  background: #fff;
+  border: none;
+}
+
+.custom-form-card .card-header {
+  background: linear-gradient(90deg, #1a237e 60%, #3949ab 100%);
+  color: #fff !important;
+  border-radius: 20px 20px 0 0;
+  border: none;
+  text-align: center;
+  font-weight: 700;
+  font-size: 2rem;
+}
+
+/* Make the login heading white for contrast */
+.custom-form-card .card-header h4 {
+  color: #fff !important;
+}
+
+.custom-form-card .btn-primary {
+  background: linear-gradient(90deg, #1a237e 60%, #3949ab 100%);
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, box-shadow 0.2s;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(30,41,59,0.08);
+}
+
+.custom-form-card .btn-primary:focus,
+.custom-form-card .btn-primary:hover {
+  background: #3949ab;
+  outline: 2px solid #1a237e;
+  outline-offset: 2px;
+}
+
+.custom-form-card label {
+  font-weight: 600;
+  color: #1a237e;
+}
+
+.custom-form-card input,
+.custom-form-card input:focus {
+  border-radius: 8px;
+  border: 1px solid #b0b0b0;
+  box-shadow: none;
+  font-size: 1.1rem;
+}
+
+.custom-form-card .form-group {
+  margin-bottom: 1.2rem;
 }

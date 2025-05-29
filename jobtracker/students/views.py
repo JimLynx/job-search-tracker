@@ -1,26 +1,27 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
-from .forms import StudentProfileForm, JobApplicationForm, WeeklyActivityTargetForm, NetworkingContactForm, EmailAuthenticationForm, DirectApproachForm, RecruiterContactForm, InterviewForm, LinkedInPostForm
+from django.contrib.auth import login, logout, get_user_model
+from .forms import StudentProfileForm, JobApplicationForm, WeeklyActivityTargetForm, NetworkingContactForm, EmailAuthenticationForm, DirectApproachForm, RecruiterContactForm, InterviewForm, LinkedInPostForm, CustomUserCreationForm
 from .models import StudentProfile, JobApplication, NetworkingContact, WeeklyActivityTarget, DirectApproach, RecruiterContact, Interview, LinkedInPost
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q, Sum
 from django.contrib import messages
+User = get_user_model()
 
 def register(request):
     if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.first_name = form.cleaned_data['first_name']
             user.last_name = form.cleaned_data['last_name']
-            user.set_password(form.cleaned_data['password'])
+            user.email = form.cleaned_data['email']
             user.save()
             messages.success(request, "Registration successful! You can now log in.")
             return redirect('login')
         else:
             messages.error(request, "There was an error with your registration. Please check the form.")
     else:
-        form = UserRegistrationForm()
+        form = CustomUserCreationForm()
     return render(request, 'students/register.html', {'form': form})
 
 def login_view(request):
@@ -461,8 +462,22 @@ def linkedin_posts(request):
         'query': query,
     })
 
-from django.contrib.auth.decorators import login_required
-
 @login_required
 def networking_questions(request):
     return render(request, 'students/networking_questions.html')
+
+@user_passes_test(lambda u: u.is_staff)
+def admin_dashboard(request):
+    # Gather all students' progress data
+    students = User.objects.filter(is_staff=False)
+    progress_data = []
+    for student in students:
+        # Calculate progress for each student (example)
+        num_targets = WeeklyActivityTarget.objects.filter(user=student).count()
+        # ...repeat for other metrics...
+        progress_data.append({
+            'student': student,
+            'num_targets': num_targets,
+            # ...other metrics...
+        })
+    return render(request, 'students/admin_dashboard.html', {'progress_data': progress_data})
