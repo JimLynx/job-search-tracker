@@ -1,0 +1,21 @@
+<script>
+  document.getElementById('select-all').onclick = function() {
+    var checkboxes = document.getElementsByName('selected_ids');
+    for (var checkbox of checkboxes) {
+      checkbox.checked = this.checked;
+    }
+  }
+
+  document.getElementById('delete-selected-btn').onclick = function(e) {
+    var checkboxes = document.querySelectorAll('input[name="selected_ids"]:checked');
+    if (checkboxes.length === 0) {
+      var toastEl = document.getElementById('bulkDeleteToast');
+      var toast = new bootstrap.Toast(toastEl);
+      toast.show();
+      e.preventDefault();
+      return false;
+    }
+    var modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+    modal.show();
+  };
+</script>

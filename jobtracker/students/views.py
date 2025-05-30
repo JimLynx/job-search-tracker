@@ -3,7 +3,7 @@ from django.contrib.auth import login, logout, get_user_model
 from .forms import StudentProfileForm, JobApplicationForm, WeeklyActivityTargetForm, NetworkingContactForm, EmailAuthenticationForm, DirectApproachForm, RecruiterContactForm, InterviewForm, LinkedInPostForm, CustomUserCreationForm
 from .models import StudentProfile, JobApplication, NetworkingContact, WeeklyActivityTarget, DirectApproach, RecruiterContact, Interview, LinkedInPost
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, F, Value, IntegerField
 from django.contrib import messages
 User = get_user_model()
 
@@ -106,26 +106,9 @@ def delete_application(request, pk):
 @login_required
 def targets(request):
     query = request.GET.get('q', '')
-    targets = WeeklyActivityTarget.objects.filter(user=request.user)
-    if query:
-        targets = targets.filter(
-            Q(activity__icontains=query) |
-            Q(week__icontains=query)
-        )
-    targets = targets.order_by('week', 'activity')
-
-    # Get a summary: for each week, sum actuals for each activity
-    weekly_summary = (
-        WeeklyActivityTarget.objects
-        .filter(user=request.user)
-        .values('week', 'activity')
-        .annotate(
-            total_actual=Sum('monday') + Sum('tuesday') + Sum('wednesday') + Sum('thursday') + Sum('friday'),
-            target=Sum('target')
-        )
-        .order_by('week', 'activity')
-    )
-
+    targets = WeeklyActivityTarget.objects.filter(user=request.user).order_by('activity')
+    for t in targets:
+        t.total_actual = (t.monday or 0) + (t.tuesday or 0) + (t.wednesday or 0) + (t.thursday or 0) + (t.friday or 0)
     if request.method == 'POST':
         form = WeeklyActivityTargetForm(request.POST)
         if form.is_valid():
@@ -140,7 +123,6 @@ def targets(request):
         'targets': targets,
         'form': form,
         'query': query,
-        'weekly_summary': weekly_summary,
     })
 
 @login_required
@@ -290,11 +272,7 @@ def direct_approach(request):
     else:
         form = DirectApproachForm()
 
-    return render(request, 'students/direct_approach.html', {
-        'approaches': approaches,
-        'form': form,
-        'query': query,
-    })
+    return render(request, 'students/direct_approach.html', {'approaches': approaches, 'form': form})
 
 def tutorial(request):
     return render(request, 'students/tutorial.html')
@@ -385,11 +363,7 @@ def interviews(request):
     else:
         form = InterviewForm()
 
-    return render(request, 'students/interviews.html', {
-        'interviews': interviews,
-        'form': form,
-        'query': query,
-    })
+    return render(request, 'students/interviews.html', {'interviews': interviews, 'form': form})
 
 @login_required
 def edit_interview(request, pk):
@@ -463,6 +437,28 @@ def linkedin_posts(request):
     })
 
 @login_required
+def edit_linkedin_post(request, pk):
+    post = get_object_or_404(LinkedInPost, pk=pk, user=request.user)
+    if request.method == 'POST':
+        form = LinkedInPostForm(request.POST, instance=post)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "LinkedIn post updated successfully!")
+            return redirect('linkedin_posts')
+    else:
+        form = LinkedInPostForm(instance=post)
+    return render(request, 'students/edit_linkedin_post.html', {'form': form, 'post': post})
+
+@login_required
+def delete_linkedin_post(request, pk):
+    post = get_object_or_404(LinkedInPost, pk=pk, user=request.user)
+    if request.method == 'POST':
+        post.delete()
+        messages.success(request, "LinkedIn post deleted successfully!")
+        return redirect('linkedin_posts')
+    return render(request, 'students/delete_linkedin_post.html', {'post': post})
+
+@login_required
 def networking_questions(request):
     return render(request, 'students/networking_questions.html')
 
@@ -481,3 +477,56 @@ def admin_dashboard(request):
             # ...other metrics...
         })
     return render(request, 'students/admin_dashboard.html', {'progress_data': progress_data})
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
+from .models import JobApplication
+
+@login_required
+def bulk_delete_applications(request):
+    if request.method == "POST":
+        ids = request.POST.getlist("selected_ids")
+        JobApplication.objects.filter(id__in=ids, user=request.user).delete()
+    return redirect('applications')
+
+@login_required
+def bulk_delete_targets(request):
+    if request.method == "POST":
+        ids = request.POST.getlist("selected_ids")
+        WeeklyActivityTarget.objects.filter(id__in=ids, user=request.user).delete()
+    return redirect('targets')
+
+@login_required
+def bulk_delete_contacts(request):
+    if request.method == "POST":
+        ids = request.POST.getlist("selected_ids")
+        NetworkingContact.objects.filter(id__in=ids, user=request.user).delete()
+    return redirect('networking')
+
+@login_required
+def bulk_delete_interviews(request):
+    if request.method == "POST":
+        ids = request.POST.getlist("selected_ids")
+        Interview.objects.filter(id__in=ids, user=request.user).delete()
+    return redirect('interviews')
+
+@login_required
+def bulk_delete_direct_approach(request):
+    if request.method == "POST":
+        ids = request.POST.getlist("selected_ids")
+        DirectApproach.objects.filter(id__in=ids, user=request.user).delete()
+    return redirect('direct_approach')
+
+@login_required
+def bulk_delete_recruiters(request):
+    if request.method == "POST":
+        ids = request.POST.getlist("selected_ids")
+        RecruiterContact.objects.filter(id__in=ids, user=request.user).delete()
+    return redirect('recruiters')
+
+@login_required
+def bulk_delete_linkedin_posts(request):
+    if request.method == "POST":
+        ids = request.POST.getlist("selected_ids")
+        LinkedInPost.objects.filter(id__in=ids, user=request.user).delete()
+    return redirect('linkedin_posts')

@@ -85,6 +85,25 @@ class EmailAuthenticationForm(forms.Form):
         return getattr(self, 'user_cache', None)
 
 class WeeklyActivityTargetForm(forms.ModelForm):
+    week = forms.IntegerField(
+        min_value=1,
+        label="Week Number",
+        help_text="Enter the week number (e.g., 1 for first week of the year)"
+    )
+    activity = forms.ChoiceField(
+        choices=WeeklyActivityTarget.ACTIVITY_CHOICES,
+        label="Activity"
+    )
+    target = forms.IntegerField(
+        min_value=0,
+        label="Weekly Target"
+    )
+    monday = forms.IntegerField(min_value=0, required=False, label="Monday")
+    tuesday = forms.IntegerField(min_value=0, required=False, label="Tuesday")
+    wednesday = forms.IntegerField(min_value=0, required=False, label="Wednesday")
+    thursday = forms.IntegerField(min_value=0, required=False, label="Thursday")
+    friday = forms.IntegerField(min_value=0, required=False, label="Friday")
+
     class Meta:
         model = WeeklyActivityTarget
         fields = [
@@ -98,12 +117,12 @@ class WeeklyActivityTargetForm(forms.ModelForm):
             'friday',
         ]
         widgets = {
-            'target': forms.NumberInput(attrs={'min': 0}),
-            'monday': forms.NumberInput(attrs={'min': 0}),
-            'tuesday': forms.NumberInput(attrs={'min': 0}),
-            'wednesday': forms.NumberInput(attrs={'min': 0}),
-            'thursday': forms.NumberInput(attrs={'min': 0}),
-            'friday': forms.NumberInput(attrs={'min': 0}),
+            'target': forms.NumberInput(attrs={'min': 0, 'class': 'form-control'}),
+            'monday': forms.NumberInput(attrs={'min': 0, 'class': 'form-control'}),
+            'tuesday': forms.NumberInput(attrs={'min': 0, 'class': 'form-control'}),
+            'wednesday': forms.NumberInput(attrs={'min': 0, 'class': 'form-control'}),
+            'thursday': forms.NumberInput(attrs={'min': 0, 'class': 'form-control'}),
+            'friday': forms.NumberInput(attrs={'min': 0, 'class': 'form-control'}),
         }
 
 class DirectApproachForm(forms.ModelForm):
