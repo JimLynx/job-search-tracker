@@ -3,159 +3,300 @@
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <div class="container mt-4">
-  <h2 class="mb-4">Dashboard Overview</h2>
+  <h2 class="mb-4">Progress Dashboard Overview</h2>
+  {% if week_start == today|date:"Y-m-d"|date:"Y-m-d" %}
+    <a href="{% url 'edit_weekly_targets' %}" class="btn btn-outline-primary btn-sm mb-3">Edit This Week's Targets</a>
+  {% endif %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <a href="?week={{ prev_week|date:'Y-m-d' }}" class="btn btn-outline-secondary">&laquo; Previous</a>
+    <span class="fw-bold">Week of {{ week_start|date:"M d, Y" }}</span>
+    <a href="?week={{ next_week|date:'Y-m-d' }}" class="btn btn-outline-secondary">Next &raquo;</a>
+  </div>
   <div class="list-group">
-    <!-- Activity Targets -->
-    <div class="list-group-item">
-      <div class="row align-items-center">
-        <div class="col-md-4 col-12 d-flex align-items-center">
-          <span class="me-2"><i class="bi bi-bullseye"></i></span>
-          <strong>Activity Targets</strong>
-        </div>
-        <div class="col-md-8 col-12 d-flex justify-content-end align-items-center">
-          <span class="badge bg-primary rounded-pill me-2">{{ num_targets }} / {{ max_targets }}</span>
-          <a href="{% url 'targets' %}" class="btn btn-sm btn-outline-primary">View</a>
-        </div>
-        <div class="col-12 mt-2">
-          <div class="progress" style="height: 8px;">
-            <div class="progress-bar bg-primary"
-                 role="progressbar"
-                 style="width: 0%"
-                 data-progress="{{ targets_progress }}">
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+
     <!-- Networking Contacts -->
     <div class="list-group-item">
       <div class="row align-items-center">
         <div class="col-md-4 col-12 d-flex align-items-center">
           <span class="me-2"><i class="bi bi-people"></i></span>
           <strong>Networking Contacts</strong>
+          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Number of new people you reached out to for networking this week." class="ms-1">
+            <i class="bi bi-info-circle" style="cursor:pointer;"></i>
+          </span>
         </div>
-        <div class="col-md-8 col-12 d-flex justify-content-end align-items-center">
-          <span class="badge bg-primary rounded-pill me-2">{{ num_contacts }} / {{ max_contacts }}</span>
-          <a href="{% url 'networking' %}" class="btn btn-sm btn-outline-primary">View</a>
+        <div class="col-md-8 col-12 d-flex align-items-center">
+          <span class="badge rounded-pill me-2 pill-minwidth
+            {% if num_contacts > max_contacts and max_contacts > 0 %}
+              pill-exceeded
+            {% elif num_contacts == max_contacts and max_contacts > 0 %}
+              pill-success
+            {% elif num_contacts > 0 %}
+              pill-inprogress
+            {% else %}
+              pill-notstarted
+            {% endif %}
+          ">
+            {{ num_contacts }} / {{ max_contacts }}
+          </span>
+          <div class="flex-grow-1 d-flex justify-content-center" style="min-width:120px;">
+            {% if num_contacts > max_contacts and max_contacts > 0 %}
+              <span class="badge badge-status badge-exceeded"><i class="bi bi-trophy-fill"></i> Goal Exceeded</span>
+            {% elif num_contacts == max_contacts and max_contacts > 0 %}
+              <span class="badge badge-status badge-met"><i class="bi bi-check-circle-fill"></i> Goal Met</span>
+            {% elif num_contacts > 0 %}
+              <span class="badge badge-status badge-inprogress"><i class="bi bi-hourglass-split"></i> In Progress</span>
+            {% else %}
+              <span class="badge badge-status badge-notstarted"><i class="bi bi-slash-circle"></i> Not Started</span>
+            {% endif %}
+          </div>
+          <a href="{% url 'networking' %}" class="btn btn-sm btn-outline-primary ms-2">View</a>
         </div>
         <div class="col-12 mt-2">
           <div class="progress" style="height: 8px;">
-            <div class="progress-bar bg-primary"
-                 role="progressbar"
-                 style="width: 0%"
-                 data-progress="{{ networking_progress }}">
+            <div class="progress-bar
+                {% if num_contacts > max_contacts and max_contacts > 0 %}
+                  bg-exceeded
+                {% elif num_contacts == max_contacts and max_contacts > 0 %}
+                  bg-success
+                {% elif num_contacts > 0 %}
+                  bg-inprogress
+                {% else %}
+                  bg-primary
+                {% endif %}"
+                role="progressbar"
+                style="width: 0%"
+                data-progress="{{ networking_progress }}">
             </div>
           </div>
         </div>
       </div>
     </div>
+
     <!-- Job Applications -->
     <div class="list-group-item">
       <div class="row align-items-center">
         <div class="col-md-4 col-12 d-flex align-items-center">
           <span class="me-2"><i class="bi bi-briefcase"></i></span>
           <strong>Job Applications</strong>
+          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Number of job applications you submitted this week." class="ms-1">
+            <i class="bi bi-info-circle" style="cursor:pointer;"></i>
+          </span>
         </div>
-        <div class="col-md-8 col-12 d-flex justify-content-end align-items-center">
-          <span class="badge bg-primary rounded-pill me-2">{{ num_applications }} / {{ max_applications }}</span>
-          <a href="{% url 'applications' %}" class="btn btn-sm btn-outline-primary">View</a>
+        <div class="col-md-8 col-12 d-flex align-items-center">
+          <span class="badge rounded-pill me-2 pill-minwidth
+            {% if num_applications > max_applications and max_applications > 0 %}
+              pill-exceeded
+            {% elif num_applications == max_applications and max_applications > 0 %}
+              pill-success
+            {% elif num_applications > 0 %}
+              pill-inprogress
+            {% else %}
+              pill-notstarted
+            {% endif %}
+          ">
+            {{ num_applications }} / {{ max_applications }}
+          </span>
+          <div class="flex-grow-1 d-flex justify-content-center" style="min-width:120px;">
+            {% if num_applications > max_applications and max_applications > 0 %}
+              <span class="badge badge-status badge-exceeded"><i class="bi bi-trophy-fill"></i> Goal Exceeded</span>
+            {% elif num_applications == max_applications and max_applications > 0 %}
+              <span class="badge badge-status badge-met"><i class="bi bi-check-circle-fill"></i> Goal Met</span>
+            {% elif num_applications > 0 %}
+              <span class="badge badge-status badge-inprogress"><i class="bi bi-hourglass-split"></i> In Progress</span>
+            {% else %}
+              <span class="badge badge-status badge-neutral"><i class="bi bi-hourglass"></i> Let's Begin!</span>
+            {% endif %}
+          </div>
+          <a href="{% url 'applications' %}" class="btn btn-sm btn-outline-primary ms-2">View</a>
         </div>
         <div class="col-12 mt-2">
           <div class="progress" style="height: 8px;">
-            <div class="progress-bar bg-primary"
-                 role="progressbar"
-                 style="width: 0%"
-                 data-progress="{{ applications_progress }}">
+            <div class="progress-bar
+                {% if num_applications > max_applications and max_applications > 0 %}
+                  bg-exceeded
+                {% elif num_applications == max_applications and max_applications > 0 %}
+                  bg-success
+                {% elif num_applications > 0 %}
+                  bg-inprogress
+                {% else %}
+                  bg-primary
+                {% endif %}"
+                role="progressbar"
+                style="width: 0%"
+                data-progress="{{ applications_progress }}">
             </div>
           </div>
         </div>
       </div>
     </div>
+
     <!-- Direct Approach -->
     <div class="list-group-item">
       <div class="row align-items-center">
         <div class="col-md-4 col-12 d-flex align-items-center">
           <span class="me-2"><i class="bi bi-send"></i></span>
           <strong>Direct Approach</strong>
+          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Number of companies you contacted directly this week." class="ms-1">
+            <i class="bi bi-info-circle" style="cursor:pointer;"></i>
+          </span>
         </div>
-        <div class="col-md-8 col-12 d-flex justify-content-end align-items-center">
-          <span class="badge bg-primary rounded-pill me-2">{{ num_direct_approach }} / {{ max_direct_approach }}</span>
-          <a href="{% url 'direct_approach' %}" class="btn btn-sm btn-outline-primary">View</a>
+        <div class="col-md-8 col-12 d-flex align-items-center">
+          <span class="badge rounded-pill me-2 pill-minwidth
+            {% if num_direct_approach > max_direct_approach and max_direct_approach > 0 %}
+              pill-exceeded
+            {% elif num_direct_approach == max_direct_approach and max_direct_approach > 0 %}
+              pill-success
+            {% elif num_direct_approach > 0 %}
+              pill-inprogress
+            {% else %}
+              pill-notstarted
+            {% endif %}
+          ">
+            {{ num_direct_approach }} / {{ max_direct_approach }}
+          </span>
+          <div class="flex-grow-1 d-flex justify-content-center" style="min-width:120px;">
+            {% if num_direct_approach > max_direct_approach and max_direct_approach > 0 %}
+              <span class="badge badge-status badge-exceeded"><i class="bi bi-trophy-fill"></i> Goal Exceeded</span>
+            {% elif num_direct_approach == max_direct_approach and max_direct_approach > 0 %}
+              <span class="badge badge-status badge-met"><i class="bi bi-check-circle-fill"></i> Goal Met</span>
+            {% elif num_direct_approach > 0 %}
+              <span class="badge badge-status badge-inprogress"><i class="bi bi-hourglass-split"></i> In Progress</span>
+            {% else %}
+              <span class="badge badge-status badge-notstarted"><i class="bi bi-slash-circle"></i> Not Started</span>
+            {% endif %}
+          </div>
+          <a href="{% url 'direct_approach' %}" class="btn btn-sm btn-outline-primary ms-2">View</a>
         </div>
         <div class="col-12 mt-2">
           <div class="progress" style="height: 8px;">
-            <div class="progress-bar bg-primary"
-                 role="progressbar"
-                 style="width: 0%"
-                 data-progress="{{ direct_approach_progress }}">
+            <div class="progress-bar
+                {% if num_direct_approach > max_direct_approach and max_direct_approach > 0 %}
+                  bg-exceeded
+                {% elif num_direct_approach == max_direct_approach and max_direct_approach > 0 %}
+                  bg-success
+                {% elif num_direct_approach > 0 %}
+                  bg-inprogress
+                {% else %}
+                  bg-primary
+                {% endif %}"
+                role="progressbar"
+                style="width: 0%"
+                data-progress="{{ direct_approach_progress }}">
             </div>
           </div>
         </div>
       </div>
     </div>
-    <!-- Recruiters -->
-    <div class="list-group-item">
-      <div class="row align-items-center">
-        <div class="col-md-4 col-12 d-flex align-items-center">
-          <span class="me-2"><i class="bi bi-person-badge"></i></span>
-          <strong>Recruiters</strong>
-        </div>
-        <div class="col-md-8 col-12 d-flex justify-content-end align-items-center">
-          <span class="badge bg-primary rounded-pill me-2">{{ num_recruiters }} / {{ max_recruiters }}</span>
-          <a href="{% url 'recruiters' %}" class="btn btn-sm btn-outline-primary">View</a>
-        </div>
-        <div class="col-12 mt-2">
-          <div class="progress" style="height: 8px;">
-            <div class="progress-bar bg-primary"
-                 role="progressbar"
-                 style="width: 0%"
-                 data-progress="{{ recruiters_progress }}">
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Interviews -->
-    <div class="list-group-item">
-      <div class="row align-items-center">
-        <div class="col-md-4 col-12 d-flex align-items-center">
-          <span class="me-2"><i class="bi bi-chat-dots"></i></span>
-          <strong>Interviews</strong>
-        </div>
-        <div class="col-md-8 col-12 d-flex justify-content-end align-items-center">
-          <span class="badge bg-primary rounded-pill me-2">{{ num_interviews }} / {{ max_interviews }}</span>
-          <a href="{% url 'interviews' %}" class="btn btn-sm btn-outline-primary">View</a>
-        </div>
-        <div class="col-12 mt-2">
-          <div class="progress" style="height: 8px;">
-            <div class="progress-bar bg-primary"
-                 role="progressbar"
-                 style="width: 0%"
-                 data-progress="{{ interviews_progress }}">
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+
     <!-- LinkedIn Posts -->
     <div class="list-group-item">
       <div class="row align-items-center">
         <div class="col-md-4 col-12 d-flex align-items-center">
           <span class="me-2"><i class="bi bi-linkedin"></i></span>
           <strong>LinkedIn Posts</strong>
+          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Number of LinkedIn posts you made this week." class="ms-1">
+            <i class="bi bi-info-circle" style="cursor:pointer;"></i>
+          </span>
         </div>
-        <div class="col-md-8 col-12 d-flex justify-content-end align-items-center">
-          <span class="badge bg-primary rounded-pill me-2">{{ num_linkedin_posts }} / {{ max_linkedin_posts }}</span>
-          <a href="{% url 'linkedin_posts' %}" class="btn btn-sm btn-outline-primary">View</a>
+        <div class="col-md-8 col-12 d-flex align-items-center">
+          <span class="badge rounded-pill me-2 pill-minwidth
+            {% if num_linkedin_posts > max_linkedin_posts and max_linkedin_posts > 0 %}
+              pill-exceeded
+            {% elif num_linkedin_posts == max_linkedin_posts and max_linkedin_posts > 0 %}
+              pill-success
+            {% elif num_linkedin_posts > 0 %}
+              pill-inprogress
+            {% else %}
+              pill-notstarted
+            {% endif %}
+          ">
+            {{ num_linkedin_posts }} / {{ max_linkedin_posts }}
+          </span>
+          <div class="flex-grow-1 d-flex justify-content-center" style="min-width:120px;">
+            {% if num_linkedin_posts > max_linkedin_posts and max_linkedin_posts > 0 %}
+              <span class="badge badge-status badge-exceeded"><i class="bi bi-trophy-fill"></i> Goal Exceeded</span>
+            {% elif num_linkedin_posts == max_linkedin_posts and max_linkedin_posts > 0 %}
+              <span class="badge badge-status badge-met"><i class="bi bi-check-circle-fill"></i> Goal Met</span>
+            {% elif num_linkedin_posts > 0 %}
+              <span class="badge badge-status badge-inprogress"><i class="bi bi-hourglass-split"></i> In Progress</span>
+            {% else %}
+              <span class="badge badge-status badge-notstarted"><i class="bi bi-slash-circle"></i> Not Started</span>
+            {% endif %}
+          </div>
+          <a href="{% url 'linkedin_posts' %}" class="btn btn-sm btn-outline-primary ms-2">View</a>
         </div>
         <div class="col-12 mt-2">
           <div class="progress" style="height: 8px;">
-            <div class="progress-bar bg-primary"
-                 role="progressbar"
-                 style="width: 0%"
-                 data-progress="{{ linkedin_posts_progress }}">
+            <div class="progress-bar
+                {% if num_linkedin_posts > max_linkedin_posts and max_linkedin_posts > 0 %}
+                  bg-exceeded
+                {% elif num_linkedin_posts == max_linkedin_posts and max_linkedin_posts > 0 %}
+                  bg-success
+                {% elif num_linkedin_posts > 0 %}
+                  bg-inprogress
+                {% else %}
+                  bg-primary
+                {% endif %}"
+                role="progressbar"
+                style="width: 0%"
+                data-progress="{{ linkedin_posts_progress }}">
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <hr class="my-4">
+
+    <!-- Recruiters (actual only, aligned) -->
+    <div class="list-group-item">
+      <div class="row align-items-center">
+        <div class="col-md-4 col-12 d-flex align-items-center">
+          <span class="me-2"><i class="bi bi-person-badge"></i></span>
+          <strong>Recruiters</strong>
+          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Number of recruiter contacts you received this week." class="ms-1">
+            <i class="bi bi-info-circle" style="cursor:pointer;"></i>
+          </span>
+        </div>
+        <div class="col-md-8 col-12 d-flex align-items-center">
+          <span class="badge rounded-pill me-2 pill-minwidth
+            {% if num_recruiters > 0 %}
+              pill-inprogress
+            {% else %}
+              pill-notstarted
+            {% endif %}
+          ">
+            {{ num_recruiters }}
+          </span>
+          <div class="flex-grow-1"></div>
+          <a href="{% url 'recruiters' %}" class="btn btn-sm btn-outline-primary ms-2">View</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interviews (actual only, aligned) -->
+    <div class="list-group-item">
+      <div class="row align-items-center">
+        <div class="col-md-4 col-12 d-flex align-items-center">
+          <span class="me-2"><i class="bi bi-chat-dots"></i></span>
+          <strong>Interviews</strong>
+          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Number of interviews you were invited to this week." class="ms-1">
+            <i class="bi bi-info-circle" style="cursor:pointer;"></i>
+          </span>
+        </div>
+        <div class="col-md-8 col-12 d-flex align-items-center">
+          <span class="badge rounded-pill me-2 pill-minwidth
+            {% if num_interviews > 0 %}
+              pill-inprogress
+            {% else %}
+              pill-notstarted
+            {% endif %}
+          ">
+            {{ num_interviews }}
+          </span>
+          <div class="flex-grow-1"></div>
+          <a href="{% url 'interviews' %}" class="btn btn-sm btn-outline-primary ms-2">View</a>
         </div>
       </div>
     </div>
@@ -171,10 +312,6 @@
           <li class="list-group-item">No recent applications.</li>
       {% endfor %}
   </ul>
-
-  {% if user.is_staff %}
-    <a href="{% url 'admin_dashboard' %}">Admin Dashboard</a>
-  {% endif %}
 </div>
 {% endblock %}
 {% block extra_js %}
@@ -186,6 +323,11 @@ document.addEventListener("DOMContentLoaded", function() {
       bar.style.width = value + '%';
     }, 300);
   });
+  // Enable Bootstrap tooltips
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+    new bootstrap.Tooltip(tooltipTriggerEl)
+  })
 });
 </script>
 {% endblock %}

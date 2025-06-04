@@ -54,9 +54,9 @@
           <td>{{ app.contact }}</td>
           <td>
             {% if app.response == 'yes' %}
-              ✅
+              <span title="Response received">✅</span>
             {% else %}
-              ❌
+              <span title="No response yet"><i class="bi bi-dash-circle text-secondary"></i></span>
             {% endif %}
           </td>
           <td>{{ app.notes }}</td>

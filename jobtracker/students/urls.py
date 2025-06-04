@@ -10,10 +10,6 @@ urlpatterns = [
     path('applications/bulk-delete/', views.bulk_delete_applications, name='bulk_delete_applications'),
     path('edit/<int:pk>/', views.edit_application, name='edit_application'),
     path('delete/<int:pk>/', views.delete_application, name='delete_application'),
-    path('targets/', views.targets, name='targets'),
-    path('targets/edit/<int:pk>/', views.edit_target, name='edit_target'),
-    path('targets/delete/<int:pk>/', views.delete_target, name='delete_target'),
-    path('targets/bulk-delete/', views.bulk_delete_targets, name='bulk_delete_targets'),
     path('networking/', views.networking, name='networking'),
     path('networking/edit/<int:pk>/', views.edit_contact, name='edit_contact'),
     path('networking/delete/<int:pk>/', views.delete_contact, name='delete_contact'),
@@ -40,4 +36,5 @@ urlpatterns = [
     path('linkedin-posts/delete/<int:pk>/', views.delete_linkedin_post, name='delete_linkedin_post'),
     path('linkedin-posts/bulk-delete/', views.bulk_delete_linkedin_posts, name='bulk_delete_linkedin_posts'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('weekly-targets/edit/', views.edit_weekly_targets, name='edit_weekly_targets'),
 ]

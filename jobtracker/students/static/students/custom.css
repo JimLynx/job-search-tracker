@@ -124,6 +124,40 @@ a:hover, .link-primary:hover {
   background-color: var(--neutral-400) !important;
   color: #fff !important;
 }
+.badge-status {
+  font-size: 0.95em;
+  font-weight: 600;
+  padding: 0.5em 1em;
+  border-radius: 1em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+}
+.badge-exceeded {
+  background: #ffc107 !important; /* Gold */
+  color: #212529 !important;
+}
+.badge-met {
+  background: #28a745 !important; /* Green */
+  color: #fff !important;
+}
+.badge-inprogress {
+  background: #fd7e14 !important; /* Orange */
+  color: #fff !important;
+}
+.badge-notstarted {
+  background: #dc3545 !important; /* Bootstrap red */
+  color: #fff !important;
+}
+.badge-minwidth {
+  min-width: 70px;
+  display: inline-block;
+  text-align: center;
+}
+.badge-neutral {
+  background: #6c757d !important; /* Bootstrap secondary/grey */
+  color: #fff !important;
+}
 
 /* Nav Pills & Tabs */
 .nav-pills .nav-link.active,
@@ -160,6 +194,21 @@ a:hover, .link-primary:hover {
 .progress-bar {
   background-color: var(--orange-500) !important;
   transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Orange for in progress */
+.progress-bar.bg-inprogress {
+  background-color: #fd7e14 !important; /* Bootstrap orange */
+}
+
+/* Green for goal reached */
+.progress-bar.bg-success {
+  background-color: #28a745 !important;
+}
+
+/* Gold for goal exceeded */
+.progress-bar.bg-exceeded {
+  background-color: #ffc107 !important; /* Bootstrap warning/gold */
 }
 
 /* Pagination */
@@ -280,4 +329,29 @@ h2 + .section-toolbar {
 
 .custom-form-card .form-group {
   margin-bottom: 1.2rem;
+}
+
+/* Pills with min-width */
+.pill-minwidth {
+  min-width: 70px;
+  display: inline-block;
+  text-align: center;
+}
+
+/* Pills for progress status */
+.pill-inprogress {
+  background-color: #fd7e14 !important; /* Orange */
+  color: #fff !important;
+}
+.pill-success {
+  background-color: #28a745 !important; /* Green */
+  color: #fff !important;
+}
+.pill-exceeded {
+  background-color: #ffc107 !important; /* Gold */
+  color: #212529 !important;
+}
+.pill-notstarted {
+  background-color: #dc3545 !important; /* Bootstrap red */
+  color: #fff !important;
 }

@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django import forms
 
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -26,10 +27,9 @@ class JobApplication(models.Model):
 
 class NetworkingContact(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    contact_name = models.CharField(max_length=100)
     date = models.DateField()
-    contact_name = models.CharField(max_length=255)
-    contact_role = models.CharField(max_length=255)
-    company = models.CharField(max_length=255)
+    accepted = models.BooleanField(default=False)  # Add this field
     conversation = models.BooleanField(default=False)
     outcome = models.CharField(max_length=255, blank=True)
     notes = models.TextField(blank=True)
@@ -38,28 +38,22 @@ class NetworkingContact(models.Model):
         return f"{self.contact_name} ({self.company})"
 
 class WeeklyActivityTarget(models.Model):
-    ACTIVITY_CHOICES = [
-        ('jobs_applied', 'Jobs applied for'),
-        ('linkedin_requests', 'LinkedIn requests'),
-        ('linkedin_connections', 'LinkedIn connections'),
-        ('conversations', 'Conversations'),
-        ('linkedin_posts', 'LinkedIn posts'),
-    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    week = models.PositiveIntegerField()
-    activity = models.CharField(max_length=30, choices=ACTIVITY_CHOICES)
-    target = models.PositiveIntegerField()
-    monday = models.PositiveIntegerField(default=0)
-    tuesday = models.PositiveIntegerField(default=0)
-    wednesday = models.PositiveIntegerField(default=0)
-    thursday = models.PositiveIntegerField(default=0)
-    friday = models.PositiveIntegerField(default=0)
+    week_start = models.DateField()  # Monday of the week
+    applications_target = models.PositiveIntegerField(default=10)
+    networking_contacts_target = models.PositiveIntegerField(default=40)
+    linkedin_connections_target = models.PositiveIntegerField(default=20)
+    direct_approach_target = models.PositiveIntegerField(default=5)
+    linkedin_posts_target = models.PositiveIntegerField(default=1)
+    recruiters_target = models.PositiveIntegerField(default=0)
+    interviews_target = models.PositiveIntegerField(default=0)
 
-    def total_actual(self):
-        return self.monday + self.tuesday + self.wednesday + self.thursday + self.friday
+    class Meta:
+        unique_together = ('user', 'week_start')
+        ordering = ['-week_start']
 
     def __str__(self):
-        return f"{self.get_activity_display()} - Week {self.week}"
+        return f"{self.user.username} - {self.week_start}"
 
 class DirectApproach(models.Model):
     REACHED_OUT_CHOICES = [
@@ -129,3 +123,13 @@ class LinkedInPost(models.Model):
 
     def __str__(self):
         return f"{self.subject} ({self.get_post_type_display()}) - {self.date_posted}"
+
+class LinkedInConnection(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # ...other fields...
+
+class NetworkingContactForm(forms.ModelForm):
+    class Meta:
+        model = NetworkingContact
+        fields = ['date', 'contact_name', 'conversation', 'outcome', 'notes', 'accepted']

@@ -47,7 +47,13 @@
           <td>{{ interview.contact }}</td>
           <td>{{ interview.stage }}</td>
           <td>{{ interview.notes }}</td>
-          <td>{% if interview.follow_up %}✅{% else %}❌{% endif %}</td>
+          <td>
+            {% if interview.follow_up %}
+              <span title="Follow up set">✅</span>
+            {% else %}
+              <span title="No follow up"><i class="bi bi-dash-circle text-secondary"></i></span>
+            {% endif %}
+          </td>
           <td>
             <a href="{% url 'edit_interview' interview.pk %}" class="btn btn-sm btn-warning">Edit</a>
             <a href="{% url 'delete_interview' interview.pk %}" class="btn btn-sm btn-danger">Delete</a>

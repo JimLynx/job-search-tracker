@@ -1,10 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, get_user_model
 from .forms import StudentProfileForm, JobApplicationForm, WeeklyActivityTargetForm, NetworkingContactForm, EmailAuthenticationForm, DirectApproachForm, RecruiterContactForm, InterviewForm, LinkedInPostForm, CustomUserCreationForm
-from .models import StudentProfile, JobApplication, NetworkingContact, WeeklyActivityTarget, DirectApproach, RecruiterContact, Interview, LinkedInPost
+from .models import StudentProfile, JobApplication, NetworkingContact, WeeklyActivityTarget, DirectApproach, RecruiterContact, Interview, LinkedInPost, LinkedInConnection
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q, Sum, F, Value, IntegerField
 from django.contrib import messages
+from datetime import date, datetime, timedelta
+from django.utils import timezone
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import (
+    WeeklyActivityTarget, NetworkingContact, JobApplication,
+    DirectApproach, RecruiterContact, Interview, LinkedInPost
+)
+
 User = get_user_model()
 
 def register(request):
@@ -126,6 +135,28 @@ def targets(request):
     })
 
 @login_required
+def edit_target(request, pk):
+    target = get_object_or_404(WeeklyActivityTarget, pk=pk, user=request.user)
+    if request.method == 'POST':
+        form = WeeklyActivityTargetForm(request.POST, instance=target)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Target updated successfully!")
+            return redirect('targets')
+    else:
+        form = WeeklyActivityTargetForm(instance=target)
+    return render(request, 'students/edit_target.html', {'form': form, 'target': target})
+
+@login_required
+def delete_target(request, pk):
+    target = get_object_or_404(WeeklyActivityTarget, pk=pk, user=request.user)
+    if request.method == 'POST':
+        target.delete()
+        messages.success(request, "Target deleted successfully!")
+        return redirect('targets')
+    return render(request, 'students/delete_target.html', {'target': target})
+
+@login_required
 def networking(request):
     query = request.GET.get('q', '')
     contacts = NetworkingContact.objects.filter(user=request.user)
@@ -153,102 +184,124 @@ def networking(request):
         'query': query,
     })
 
+def get_week_start(d):
+    """Return the Monday of the week for a given date."""
+    return d - timedelta(days=d.weekday())
+
 @login_required
 def dashboard(request):
-    num_targets = WeeklyActivityTarget.objects.filter(user=request.user).count()
-    num_contacts = NetworkingContact.objects.filter(user=request.user).count()
-    num_applications = JobApplication.objects.filter(user=request.user).count()
-    num_direct_approach = DirectApproach.objects.filter(user=request.user).count()
-    num_recruiters = RecruiterContact.objects.filter(user=request.user).count()
-    num_interviews = Interview.objects.filter(user=request.user).count()
-    num_linkedin_posts = LinkedInPost.objects.filter(user=request.user).count()
-
-    recent_applications = JobApplication.objects.filter(user=request.user).order_by('-date_applied')[:5]
-
-    MAX_TARGETS = 5
-    MAX_CONTACTS = 10
-    MAX_APPLICATIONS = 5
-    MAX_DIRECT_APPROACH = 3
-    MAX_RECRUITERS = 3
-    MAX_INTERVIEWS = 3
-    MAX_LINKEDIN_POSTS = 2
-
-    targets_progress = min(int(num_targets / MAX_TARGETS * 100), 100)
-    networking_progress = min(int(num_contacts / MAX_CONTACTS * 100), 100)
-    applications_progress = min(int(num_applications / MAX_APPLICATIONS * 100), 100)
-    direct_approach_progress = min(int(num_direct_approach / MAX_DIRECT_APPROACH * 100), 100)
-    recruiters_progress = min(int(num_recruiters / MAX_RECRUITERS * 100), 100)
-    interviews_progress = min(int(num_interviews / MAX_INTERVIEWS * 100), 100)
-    linkedin_posts_progress = min(int(num_linkedin_posts / MAX_LINKEDIN_POSTS * 100), 100)
-
-    return render(request, 'students/dashboard.html', {
-        'num_targets': num_targets,
-        'num_contacts': num_contacts,
-        'num_applications': num_applications,
-        'num_direct_approach': num_direct_approach,
-        'num_recruiters': num_recruiters,
-        'num_interviews': num_interviews,
-        'num_linkedin_posts': num_linkedin_posts,
-        'recent_applications': recent_applications,
-        'targets_progress': targets_progress,
-        'networking_progress': networking_progress,
-        'applications_progress': applications_progress,
-        'direct_approach_progress': direct_approach_progress,
-        'recruiters_progress': recruiters_progress,
-        'interviews_progress': interviews_progress,
-        'linkedin_posts_progress': linkedin_posts_progress,
-        'max_targets': MAX_TARGETS,
-        'max_contacts': MAX_CONTACTS,
-        'max_applications': MAX_APPLICATIONS,
-        'max_direct_approach': MAX_DIRECT_APPROACH,
-        'max_recruiters': MAX_RECRUITERS,
-        'max_interviews': MAX_INTERVIEWS,
-        'max_linkedin_posts': MAX_LINKEDIN_POSTS,
-    })
-
-@login_required
-def edit_target(request, pk):
-    target = get_object_or_404(WeeklyActivityTarget, pk=pk, user=request.user)
-    if request.method == 'POST':
-        form = WeeklyActivityTargetForm(request.POST, instance=target)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Target updated successfully!")
-            return redirect('targets')
+    today = timezone.localdate()
+    week_str = request.GET.get('week')
+    if week_str:
+        week_start = date.fromisoformat(week_str)
     else:
-        form = WeeklyActivityTargetForm(instance=target)
-    return render(request, 'students/edit_target.html', {'form': form, 'target': target})
+        week_start = get_week_start(today)
+
+    # Get or create the target for this week
+    target, _ = WeeklyActivityTarget.objects.get_or_create(user=request.user, week_start=week_start)
+
+    # Convert week_start to timezone-aware datetimes for LinkedInConnection
+    week_start_dt = timezone.make_aware(datetime.combine(week_start, datetime.min.time()))
+    week_end_dt = timezone.make_aware(datetime.combine(week_start + timedelta(days=7), datetime.min.time()))
+
+    # Calculate actuals for this week (adjust field names as needed)
+    contacts_count = NetworkingContact.objects.filter(
+        user=request.user,
+        date__gte=week_start,
+        date__lt=week_start + timedelta(days=7)
+    ).count()
+    applications_count = JobApplication.objects.filter(
+        user=request.user,
+        date_applied__gte=week_start,
+        date_applied__lt=week_start + timedelta(days=7)
+    ).count()
+    linkedin_connections_count = LinkedInConnection.objects.filter(
+        user=request.user,
+        created_at__gte=week_start_dt,
+        created_at__lt=week_end_dt
+    ).count()
+    direct_approach_count = DirectApproach.objects.filter(
+        user=request.user,
+        date__gte=week_start,
+        date__lt=week_start + timedelta(days=7)
+    ).count()
+    recruiters_count = RecruiterContact.objects.filter(
+        user=request.user,
+        date__gte=week_start,
+        date__lt=week_start + timedelta(days=7)
+    ).count()
+    interviews_count = Interview.objects.filter(
+        user=request.user,
+        date__gte=week_start,
+        date__lt=week_start + timedelta(days=7)
+    ).count()
+    linkedin_posts_count = LinkedInPost.objects.filter(
+        user=request.user,
+        date_posted__gte=week_start,
+        date_posted__lt=week_start + timedelta(days=7)
+    ).count()
+
+    # Progress calculations (avoid division by zero)
+    def progress(actual, target):
+        return int(min((actual / target) * 100, 100)) if target else 0
+
+    # New calculations for sent and achieved contacts
+    contacts_sent = NetworkingContact.objects.filter(
+        user=request.user,
+        date__gte=week_start,
+        date__lt=week_start + timedelta(days=7)
+    ).count()
+
+    contacts_achieved = NetworkingContact.objects.filter(
+        user=request.user,
+        date__gte=week_start,
+        date__lt=week_start + timedelta(days=7),
+        accepted=True
+    ).count()
+
+    context = {
+        'week_start': week_start,
+        'prev_week': week_start - timedelta(days=7),
+        'next_week': week_start + timedelta(days=7),
+        'num_contacts': contacts_count,
+        'max_contacts': target.networking_contacts_target,
+        'networking_progress': progress(contacts_count, target.networking_contacts_target),
+        'num_applications': applications_count,
+        'max_applications': target.applications_target,
+        'applications_progress': progress(applications_count, target.applications_target),
+        'num_linkedin_connections': linkedin_connections_count,
+        'max_linkedin_connections': target.linkedin_connections_target,
+        'linkedin_connections_progress': progress(linkedin_connections_count, target.linkedin_connections_target),
+        'num_direct_approach': direct_approach_count,
+        'max_direct_approach': target.direct_approach_target,
+        'direct_approach_progress': progress(direct_approach_count, target.direct_approach_target),
+        'num_recruiters': recruiters_count,
+        'max_recruiters': target.recruiters_target,
+        'recruiters_progress': progress(recruiters_count, target.recruiters_target),
+        'num_interviews': interviews_count,
+        'max_interviews': target.interviews_target,
+        'interviews_progress': progress(interviews_count, target.interviews_target),
+        'num_linkedin_posts': linkedin_posts_count,
+        'max_linkedin_posts': target.linkedin_posts_target,
+        'linkedin_posts_progress': progress(linkedin_posts_count, target.linkedin_posts_target),
+        'recent_applications': JobApplication.objects.filter(user=request.user).order_by('-date_applied')[:5],
+        'contacts_sent': contacts_sent,
+        'contacts_achieved': contacts_achieved,
+    }
+    # For template logic: show edit link only for current week
+    context['is_current_week'] = (week_start == get_week_start(today))
+    context['today'] = today
+    return render(request, 'students/dashboard.html', context)
 
 @login_required
-def delete_target(request, pk):
-    target = get_object_or_404(WeeklyActivityTarget, pk=pk, user=request.user)
+def delete_profile(request):
     if request.method == 'POST':
-        target.delete()
-        messages.success(request, "Target deleted successfully!")
-        return redirect('targets')
-    return render(request, 'students/delete_target.html', {'target': target})
-
-@login_required
-def edit_contact(request, pk):
-    contact = get_object_or_404(NetworkingContact, pk=pk, user=request.user)
-    if request.method == 'POST':
-        form = NetworkingContactForm(request.POST, instance=contact)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Contact updated successfully!")
-            return redirect('networking')
-    else:
-        form = NetworkingContactForm(instance=contact)
-    return render(request, 'students/edit_contact.html', {'form': form, 'contact': contact})
-
-@login_required
-def delete_contact(request, pk):
-    contact = get_object_or_404(NetworkingContact, pk=pk, user=request.user)
-    if request.method == 'POST':
-        contact.delete()
-        messages.success(request, "Contact deleted successfully!")
-        return redirect('networking')
-    return render(request, 'students/delete_contact.html', {'contact': contact})
+        user = request.user
+        logout(request)
+        user.delete()
+        messages.success(request, "Your profile has been deleted.")
+        return redirect('welcome')  # or your homepage
+    return render(request, 'students/delete_profile.html')
 
 @login_required
 def direct_approach(request):
@@ -280,16 +333,6 @@ def tutorial(request):
 @login_required
 def welcome(request):
     return render(request, 'students/welcome.html')
-
-@login_required
-def delete_profile(request):
-    if request.method == 'POST':
-        user = request.user
-        logout(request)
-        user.delete()
-        messages.success(request, "Your profile has been deleted.")
-        return redirect('welcome')  # or your homepage
-    return render(request, 'students/delete_profile.html')
 
 @login_required
 def edit_direct_approach(request, pk):
@@ -490,13 +533,6 @@ def bulk_delete_applications(request):
     return redirect('applications')
 
 @login_required
-def bulk_delete_targets(request):
-    if request.method == "POST":
-        ids = request.POST.getlist("selected_ids")
-        WeeklyActivityTarget.objects.filter(id__in=ids, user=request.user).delete()
-    return redirect('targets')
-
-@login_required
 def bulk_delete_contacts(request):
     if request.method == "POST":
         ids = request.POST.getlist("selected_ids")
@@ -530,3 +566,41 @@ def bulk_delete_linkedin_posts(request):
         ids = request.POST.getlist("selected_ids")
         LinkedInPost.objects.filter(id__in=ids, user=request.user).delete()
     return redirect('linkedin_posts')
+
+@login_required
+def edit_contact(request, pk):
+    contact = get_object_or_404(NetworkingContact, pk=pk, user=request.user)
+    if request.method == 'POST':
+        form = NetworkingContactForm(request.POST, instance=contact)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Contact updated successfully!")
+            return redirect('networking')
+    else:
+        form = NetworkingContactForm(instance=contact)
+    return render(request, 'students/edit_contact.html', {'form': form, 'contact': contact})
+
+@login_required
+def delete_contact(request, pk):
+    contact = get_object_or_404(NetworkingContact, pk=pk, user=request.user)
+    if request.method == 'POST':
+        contact.delete()
+        messages.success(request, "Contact deleted successfully!")
+        return redirect('networking')
+    return render(request, 'students/delete_contact.html', {'contact': contact})
+
+@login_required
+def edit_weekly_targets(request):
+    today = timezone.localdate()
+    week_start = today - timedelta(days=today.weekday())
+    target, _ = WeeklyActivityTarget.objects.get_or_create(user=request.user, week_start=week_start)
+
+    if request.method == 'POST':
+        form = WeeklyActivityTargetForm(request.POST, instance=target)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Weekly targets updated!")
+            return redirect('dashboard')
+    else:
+        form = WeeklyActivityTargetForm(instance=target)
+    return render(request, 'students/edit_weekly_targets.html', {'form': form, 'week_start': week_start})

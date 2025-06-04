@@ -52,12 +52,19 @@ class JobApplicationForm(forms.ModelForm):
         widgets = {
             'date_applied': forms.DateInput(attrs={'type': 'date'}),
             'notes': forms.Textarea(attrs={'rows': 2}),
+            'application_url': forms.TextInput(attrs={'placeholder': 'Paste or type the URL'}),
         }
+
+    def clean_application_url(self):
+        url = self.cleaned_data.get('application_url')
+        if url and not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+        return url
 
 class NetworkingContactForm(forms.ModelForm):
     class Meta:
         model = NetworkingContact
-        fields = ['date', 'contact_name', 'contact_role', 'company', 'conversation', 'outcome', 'notes']
+        fields = ['date', 'contact_name', 'conversation', 'outcome', 'notes', 'accepted']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'notes': forms.Textarea(attrs={'rows': 2}),
@@ -85,45 +92,17 @@ class EmailAuthenticationForm(forms.Form):
         return getattr(self, 'user_cache', None)
 
 class WeeklyActivityTargetForm(forms.ModelForm):
-    week = forms.IntegerField(
-        min_value=1,
-        label="Week Number",
-        help_text="Enter the week number (e.g., 1 for first week of the year)"
-    )
-    activity = forms.ChoiceField(
-        choices=WeeklyActivityTarget.ACTIVITY_CHOICES,
-        label="Activity"
-    )
-    target = forms.IntegerField(
-        min_value=0,
-        label="Weekly Target"
-    )
-    monday = forms.IntegerField(min_value=0, required=False, label="Monday")
-    tuesday = forms.IntegerField(min_value=0, required=False, label="Tuesday")
-    wednesday = forms.IntegerField(min_value=0, required=False, label="Wednesday")
-    thursday = forms.IntegerField(min_value=0, required=False, label="Thursday")
-    friday = forms.IntegerField(min_value=0, required=False, label="Friday")
-
     class Meta:
         model = WeeklyActivityTarget
         fields = [
-            'activity',
-            'week',
-            'target',
-            'monday',
-            'tuesday',
-            'wednesday',
-            'thursday',
-            'friday',
+            'applications_target',
+            'networking_contacts_target',
+            'linkedin_connections_target',
+            'direct_approach_target',
+            'linkedin_posts_target',
+            'recruiters_target',
+            'interviews_target',
         ]
-        widgets = {
-            'target': forms.NumberInput(attrs={'min': 0, 'class': 'form-control'}),
-            'monday': forms.NumberInput(attrs={'min': 0, 'class': 'form-control'}),
-            'tuesday': forms.NumberInput(attrs={'min': 0, 'class': 'form-control'}),
-            'wednesday': forms.NumberInput(attrs={'min': 0, 'class': 'form-control'}),
-            'thursday': forms.NumberInput(attrs={'min': 0, 'class': 'form-control'}),
-            'friday': forms.NumberInput(attrs={'min': 0, 'class': 'form-control'}),
-        }
 
 class DirectApproachForm(forms.ModelForm):
     class Meta:

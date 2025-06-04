@@ -45,7 +45,13 @@
           <td>{{ c.contact_name }}</td>
           <td>{{ c.contact_role }}</td>
           <td>{{ c.company }}</td>
-          <td>{% if c.conversation %}✅{% else %}❌{% endif %}</td>
+          <td>
+            {% if c.conversation %}
+              <span title="Conversation had">✅</span>
+            {% else %}
+              <span title="No conversation yet"><i class="bi bi-dash-circle text-secondary"></i></span>
+            {% endif %}
+          </td>
           <td>{{ c.outcome }}</td>
           <td>{{ c.notes }}</td>
           <td>
