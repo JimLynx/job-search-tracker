@@ -77,10 +77,19 @@ class DirectApproach(models.Model):
 class RecruiterContact(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
-    role = models.CharField(max_length=255)
-    agency = models.CharField(max_length=255)
-    stage = models.CharField(max_length=255)
-    follow_up = models.BooleanField(default=False)
+    agency = models.CharField(max_length=100)
+    role = models.CharField(max_length=100)
+    contact = models.CharField(max_length=100, blank=True)  # Add this line
+    stage = models.CharField(
+        max_length=32,
+        choices=[
+            ('cv_submitted', 'CV submitted'),
+            ('phone_screen', 'Phone screen'),
+            ('unsuccessful', 'Unsuccessful'),
+            ('video_interview', 'Video interview'),
+        ],
+        default='cv_submitted'
+    )
     notes = models.TextField(blank=True)
 
     def __str__(self):

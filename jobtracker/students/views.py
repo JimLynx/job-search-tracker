@@ -81,7 +81,10 @@ def applications(request):
             job_app = form.save(commit=False)
             job_app.user = request.user
             job_app.save()
+            messages.success(request, "Job application added successfully!")
             return redirect('applications')
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = JobApplicationForm()
     return render(request, 'students/applications.html', {
@@ -321,6 +324,7 @@ def direct_approach(request):
             approach = form.save(commit=False)
             approach.user = request.user
             approach.save()
+            messages.success(request, "Direct approach added successfully!")
             return redirect('direct_approach')
     else:
         form = DirectApproachForm()
@@ -374,7 +378,10 @@ def recruiters(request):
             recruiter = form.save(commit=False)
             recruiter.user = request.user
             recruiter.save()
+            messages.success(request, "Recruiter contact added successfully!")
             return redirect('recruiters')
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = RecruiterContactForm()
 
@@ -469,7 +476,10 @@ def linkedin_posts(request):
             post = form.save(commit=False)
             post.user = request.user
             post.save()
+            messages.success(request, "LinkedIn post added successfully!")
             return redirect('linkedin_posts')
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = LinkedInPostForm()
 
@@ -604,3 +614,16 @@ def edit_weekly_targets(request):
     else:
         form = WeeklyActivityTargetForm(instance=target)
     return render(request, 'students/edit_weekly_targets.html', {'form': form, 'week_start': week_start})
+
+def add_contact(request):
+    if request.method == 'POST':
+        form = NetworkingContactForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Contact added successfully!")
+            return redirect('networking')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = NetworkingContactForm()
+    return render(request, 'students/add_contact.html', {'form': form})

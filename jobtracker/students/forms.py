@@ -119,7 +119,7 @@ class DirectApproachForm(forms.ModelForm):
 class RecruiterContactForm(forms.ModelForm):
     class Meta:
         model = RecruiterContact
-        fields = ['date', 'role', 'agency', 'stage', 'follow_up', 'notes']
+        fields = ['date', 'agency', 'role', 'contact', 'stage', 'notes']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'notes': forms.Textarea(attrs={'rows': 2}),

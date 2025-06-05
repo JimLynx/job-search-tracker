@@ -2,6 +2,15 @@
 {% load crispy_forms_tags %}
 {% block title %}Job Applications{% endblock %}
 {% block content %}
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endfor %}
+{% endif %}
+
 <h2 class="mt-4">Job Applications</h2>
 
 <div class="row align-items-center section-toolbar">
@@ -33,7 +42,7 @@
           <th>Company Name</th>
           <th>Application URL</th>
           <th>Contact</th>
-          <th>Response</th>
+          <th>Response?</th>
           <th>Notes</th>
           <th>Actions</th>
         </tr>
@@ -116,4 +125,5 @@
 
 {% include "students/includes/bulk_delete_toast.html" %}
 {% include "students/includes/bulk_delete_script.html" %}
+
 {% endblock %}
