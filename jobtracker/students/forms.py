@@ -62,31 +62,13 @@ class JobApplicationForm(forms.ModelForm):
         return url
 
 class NetworkingContactForm(forms.ModelForm):
-    OUTCOME_CHOICES = [
-        ('Industry insights', 'Industry insights'),
-        ('Technical discussion', 'Technical discussion'),
-        ('Advice / Feedback', 'Advice / Feedback'),
-        ('Role Referral', 'Role Referral'),
-        ('New Contact Introduction', 'New Contact Introduction'),
-    ]
-
-    outcome = forms.ChoiceField(
-        choices=OUTCOME_CHOICES,
-        required=True,
-        label="Outcome",
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
-
     class Meta:
         model = NetworkingContact
         fields = [
-            'date', 'contact_name', 'contact_role', 'company',
-            'conversation', 'outcome', 'notes', 'accepted'
+            'request_sent', 'contact_name', 'contact_role', 'company',
+            'accepted', 'accepted_date', 'conversation', 'conversation_date',
+            'outcome', 'notes'
         ]
-        widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'notes': forms.Textarea(attrs={'rows': 2}),
-        }
 
 class EmailAuthenticationForm(forms.Form):
     email = forms.EmailField(label="Email", max_length=254, widget=forms.EmailInput(attrs={'autofocus': True}))

@@ -169,7 +169,7 @@ def networking(request):
             Q(company__icontains=query) |
             Q(contact_role__icontains=query)
         )
-    contacts = contacts.order_by('-date')
+    contacts = contacts.order_by('-request_sent')
 
     if request.method == 'POST':
         form = NetworkingContactForm(request.POST)
@@ -194,106 +194,135 @@ def get_week_start(d):
 @login_required
 def dashboard(request):
     today = timezone.localdate()
+    # Support ?week=YYYY-MM-DD for pagination
     week_str = request.GET.get('week')
     if week_str:
-        week_start = date.fromisoformat(week_str)
+        week_start = datetime.strptime(week_str, "%Y-%m-%d").date()
     else:
-        week_start = get_week_start(today)
-
-    # Get or create the target for this week
-    target, _ = WeeklyActivityTarget.objects.get_or_create(user=request.user, week_start=week_start)
-
-    # Convert week_start to timezone-aware datetimes for LinkedInConnection
+        week_start = today - timedelta(days=today.weekday())
     week_start_dt = timezone.make_aware(datetime.combine(week_start, datetime.min.time()))
     week_end_dt = timezone.make_aware(datetime.combine(week_start + timedelta(days=7), datetime.min.time()))
+    target, _ = WeeklyActivityTarget.objects.get_or_create(user=request.user, week_start=week_start)
 
-    # Calculate actuals for this week (adjust field names as needed)
-    contacts_count = NetworkingContact.objects.filter(
+    # Networking metrics
+    contacts = NetworkingContact.objects.filter(
         user=request.user,
-        date__gte=week_start,
-        date__lt=week_start + timedelta(days=7)
-    ).count()
-    applications_count = JobApplication.objects.filter(
-        user=request.user,
-        date_applied__gte=week_start,
-        date_applied__lt=week_start + timedelta(days=7)
-    ).count()
-    linkedin_connections_count = LinkedInConnection.objects.filter(
-        user=request.user,
-        created_at__gte=week_start_dt,
-        created_at__lt=week_end_dt
-    ).count()
-    direct_approach_count = DirectApproach.objects.filter(
-        user=request.user,
-        date__gte=week_start,
-        date__lt=week_start + timedelta(days=7)
-    ).count()
-    recruiters_count = RecruiterContact.objects.filter(
-        user=request.user,
-        date__gte=week_start,
-        date__lt=week_start + timedelta(days=7)
-    ).count()
-    interviews_count = Interview.objects.filter(
-        user=request.user,
-        date__gte=week_start,
-        date__lt=week_start + timedelta(days=7)
-    ).count()
-    linkedin_posts_count = LinkedInPost.objects.filter(
-        user=request.user,
-        date_posted__gte=week_start,
-        date_posted__lt=week_start + timedelta(days=7)
-    ).count()
+        request_sent__gte=week_start,
+        request_sent__lt=week_start + timedelta(days=7)
+    )
+    num_contacts = contacts.count()
+    sent_count = num_contacts
+    accepted_count = contacts.filter(accepted=True).count()
+    conversation_count = contacts.filter(conversation=True).count()
 
-    # Progress calculations (avoid division by zero)
     def progress(actual, target):
         return int(min((actual / target) * 100, 100)) if target else 0
 
-    # New calculations for sent and achieved contacts
-    contacts_sent = NetworkingContact.objects.filter(
-        user=request.user,
-        date__gte=week_start,
-        date__lt=week_start + timedelta(days=7)
-    ).count()
-
-    contacts_achieved = NetworkingContact.objects.filter(
-        user=request.user,
-        date__gte=week_start,
-        date__lt=week_start + timedelta(days=7),
-        accepted=True
-    ).count()
-
     context = {
+        'num_contacts': num_contacts,
+        'max_contacts': target.networking_contacts_target,
+        'networking_progress': progress(num_contacts, target.networking_contacts_target),
+        'sent_count': sent_count,
+        'accepted_count': accepted_count,
+        'conversation_count': conversation_count,
+        'sent_target': 40,  # Set to 40
+        'accepted_target': 20,  # Set to 20
+        'conversation_target': 5,  # Set to 5
+        'percent_sent': progress(sent_count, 40),
+        'percent_accepted': progress(accepted_count, 20),
+        'percent_conversed': progress(conversation_count, 5),
+
+        'num_applications': JobApplication.objects.filter(
+            user=request.user,
+            date_applied__gte=week_start,
+            date_applied__lt=week_start + timedelta(days=7)
+        ).count(),
+        'max_applications': target.applications_target,
+        'applications_progress': progress(
+            JobApplication.objects.filter(
+                user=request.user,
+                date_applied__gte=week_start,
+                date_applied__lt=week_start + timedelta(days=7)
+            ).count(),
+            target.applications_target
+        ),
+        'num_linkedin_connections': LinkedInConnection.objects.filter(
+            user=request.user,
+            created_at__gte=week_start_dt,
+            created_at__lt=week_end_dt
+        ).count(),
+        'max_linkedin_connections': target.linkedin_connections_target,
+        'linkedin_connections_progress': progress(
+            LinkedInConnection.objects.filter(
+                user=request.user,
+                created_at__gte=week_start_dt,
+                created_at__lt=week_end_dt
+            ).count(),
+            target.linkedin_connections_target
+        ),
+        'num_direct_approach': DirectApproach.objects.filter(
+            user=request.user,
+            date__gte=week_start,
+            date__lt=week_start + timedelta(days=7)
+        ).count(),
+        'max_direct_approach': target.direct_approach_target,
+        'direct_approach_progress': progress(
+            DirectApproach.objects.filter(
+                user=request.user,
+                date__gte=week_start,
+                date__lt=week_start + timedelta(days=7)
+            ).count(),
+            target.direct_approach_target
+        ),
+        'num_recruiters': RecruiterContact.objects.filter(
+            user=request.user,
+            date__gte=week_start,
+            date__lt=week_start + timedelta(days=7)
+        ).count(),
+        'max_recruiters': target.recruiters_target,
+        'recruiters_progress': progress(
+            RecruiterContact.objects.filter(
+                user=request.user,
+                date__gte=week_start,
+                date__lt=week_start + timedelta(days=7)
+            ).count(),
+            target.recruiters_target
+        ),
+        'num_interviews': Interview.objects.filter(
+            user=request.user,
+            date__gte=week_start,
+            date__lt=week_start + timedelta(days=7)
+        ).count(),
+        'max_interviews': target.interviews_target,
+        'interviews_progress': progress(
+            Interview.objects.filter(
+                user=request.user,
+                date__gte=week_start,
+                date__lt=week_start + timedelta(days=7)
+            ).count(),
+            target.interviews_target
+        ),
+        'num_linkedin_posts': LinkedInPost.objects.filter(
+            user=request.user,
+            date_posted__gte=week_start,
+            date_posted__lt=week_start + timedelta(days=7)
+        ).count(),
+        'max_linkedin_posts': target.linkedin_posts_target,
+        'linkedin_posts_progress': progress(
+            LinkedInPost.objects.filter(
+                user=request.user,
+                date_posted__gte=week_start,
+                date_posted__lt=week_start + timedelta(days=7)
+            ).count(),
+            target.linkedin_posts_target
+        ),
+        'recent_applications': JobApplication.objects.filter(user=request.user).order_by('-date_applied')[:5],
         'week_start': week_start,
+        'week_start_display': week_start.strftime('%B %d, %Y'),
         'prev_week': week_start - timedelta(days=7),
         'next_week': week_start + timedelta(days=7),
-        'num_contacts': contacts_count,
-        'max_contacts': target.networking_contacts_target,
-        'networking_progress': progress(contacts_count, target.networking_contacts_target),
-        'num_applications': applications_count,
-        'max_applications': target.applications_target,
-        'applications_progress': progress(applications_count, target.applications_target),
-        'num_linkedin_connections': linkedin_connections_count,
-        'max_linkedin_connections': target.linkedin_connections_target,
-        'linkedin_connections_progress': progress(linkedin_connections_count, target.linkedin_connections_target),
-        'num_direct_approach': direct_approach_count,
-        'max_direct_approach': target.direct_approach_target,
-        'direct_approach_progress': progress(direct_approach_count, target.direct_approach_target),
-        'num_recruiters': recruiters_count,
-        'max_recruiters': target.recruiters_target,
-        'recruiters_progress': progress(recruiters_count, target.recruiters_target),
-        'num_interviews': interviews_count,
-        'max_interviews': target.interviews_target,
-        'interviews_progress': progress(interviews_count, target.interviews_target),
-        'num_linkedin_posts': linkedin_posts_count,
-        'max_linkedin_posts': target.linkedin_posts_target,
-        'linkedin_posts_progress': progress(linkedin_posts_count, target.linkedin_posts_target),
-        'recent_applications': JobApplication.objects.filter(user=request.user).order_by('-date_applied')[:5],
-        'contacts_sent': contacts_sent,
-        'contacts_achieved': contacts_achieved,
+        'today': today,
     }
-    # For template logic: show edit link only for current week
-    context['is_current_week'] = (week_start == get_week_start(today))
-    context['today'] = today
     return render(request, 'students/dashboard.html', context)
 
 @login_required
@@ -627,3 +656,4 @@ def add_contact(request):
     else:
         form = NetworkingContactForm()
     return render(request, 'students/add_contact.html', {'form': form})
+

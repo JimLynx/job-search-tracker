@@ -132,6 +132,9 @@ a:hover, .link-primary:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
+  width: 200px; /* Adjust as needed */
+  text-align: center;
+  display: inline-block;
 }
 .badge-status-fixed {
   min-width: 180px;

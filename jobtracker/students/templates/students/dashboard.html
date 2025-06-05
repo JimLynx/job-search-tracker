@@ -5,7 +5,7 @@
 <div class="container mt-4">
   <h2 class="mb-4">Progress Dashboard Overview</h2>
   {% if week_start == today|date:"Y-m-d"|date:"Y-m-d" %}
-    <a href="{% url 'edit_weekly_targets' %}" class="btn btn-outline-primary btn-sm mb-3">Edit This Week's Targets</a>
+  <a href="{% url 'edit_weekly_targets' %}" class="btn btn-outline-primary btn-sm mb-3">Edit This Week's Targets</a>
   {% endif %}
   <div class="d-flex justify-content-between align-items-center mb-3">
     <a href="?week={{ prev_week|date:'Y-m-d' }}" class="btn btn-outline-secondary">&laquo; Previous</a>
@@ -14,170 +14,271 @@
   </div>
   <div class="list-group">
 
-    <!-- Networking Contacts -->
-    <a href="{% url 'networking' %}" class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
-      <div class="dashboard-progress-row px-4 py-4 d-flex align-items-center gap-3">
-        <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
-          <i class="bi bi-people me-2"></i>
-          <strong>Networking Contacts</strong>
-          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Number of new people you reached out to for networking this week." class="ms-2">
-            <i class="bi bi-info-circle" style="cursor:pointer;"></i>
+    <!-- Networking Contacts: Single Row with Sub-Rows -->
+    <a href="{% url 'networking' %}"
+      class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
+      <div class="dashboard-progress-row px-4 py-4">
+        <!-- Main label -->
+        <div class="d-flex align-items-center mb-2">
+          <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
+            <i class="bi bi-people me-2"></i>
+            <strong>Networking Contacts</strong>
+            <span data-bs-toggle="tooltip" data-bs-placement="top" title="Networking activity this week." class="ms-2">
+              <i class="bi bi-info-circle" style="cursor:pointer;"></i>
+            </span>
           </span>
-        </span>
-        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_contacts > max_contacts and max_contacts > 0 %} pill-exceeded{% elif num_contacts == max_contacts and max_contacts > 0 %} pill-success{% elif num_contacts > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
-          {{ num_contacts }} / {{ max_contacts }}
-        </span>
-        <div class="flex-grow-1 d-flex align-items-center" style="min-width:120px;">
-          <div class="progress w-100" style="height: 20px;">
-            <div class="progress-bar{% if num_contacts > max_contacts and max_contacts > 0 %} bg-exceeded{% elif num_contacts == max_contacts and max_contacts > 0 %} bg-success{% elif num_contacts > 0 %} bg-inprogress{% else %} bg-primary{% endif %}"
-                role="progressbar"
-                style="width: {{ networking_progress|default_if_none:0 }}%;"
-                aria-valuenow="{{ networking_progress|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
+        </div>
+        <!-- Sub-rows -->
+        <div class="container-fluid px-0">
+          <!-- Sent -->
+          <div class="row align-items-center mb-2">
+            <div class="col-auto d-flex align-items-center" style="min-width: 140px;">
+              <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
+                {% if sent_count > sent_target and sent_target > 0 %} pill-exceeded
+                {% elif sent_count == sent_target and sent_target > 0 %} pill-success
+                {% elif sent_count > 0 %} pill-inprogress
+                {% else %} pill-notstarted{% endif %}">
+                {{ sent_count }} / {{ sent_target }}
+              </span>
+              <span class="text-primary small ms-2">Sent</span>
+            </div>
+            <div class="col d-flex align-items-center">
+              <div class="progress w-100" style="height: 18px;">
+                <div class="progress-bar bg-primary" role="progressbar"
+                  style="width: {{ percent_sent|default_if_none:0 }}%;"
+                  aria-valuenow="{{ percent_sent|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+              </div>
+              {% if sent_count > sent_target and sent_target > 0 %}
+              <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
+                <i class="bi bi-trophy-fill"></i> Goal Exceeded
+              </span>
+              {% elif sent_count == sent_target and sent_target > 0 %}
+              <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
+                <i class="bi bi-check-circle-fill"></i> Goal Met
+              </span>
+              {% elif sent_count > 0 %}
+              <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
+                <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ percent_sent|default_if_none:0 }}%
+              </span>
+              {% else %}
+              <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
+                <i class="bi bi-slash-circle"></i> Not Started
+              </span>
+              {% endif %}
+            </div>
+          </div>
+          <!-- Accepted -->
+          <div class="row align-items-center mb-2">
+            <div class="col-auto d-flex align-items-center" style="min-width: 140px;">
+              <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
+                {% if accepted_count > accepted_target and accepted_target > 0 %} pill-exceeded
+                {% elif accepted_count == accepted_target and accepted_target > 0 %} pill-success
+                {% elif accepted_count > 0 %} pill-inprogress
+                {% else %} pill-notstarted{% endif %}">
+                {{ accepted_count }} / {{ accepted_target }}
+              </span>
+              <span class="text-success small ms-2">Accepted</span>
+            </div>
+            <div class="col d-flex align-items-center">
+              <div class="progress w-100" style="height: 18px;">
+                <div class="progress-bar bg-success" role="progressbar"
+                  style="width: {{ percent_accepted|default_if_none:0 }}%;"
+                  aria-valuenow="{{ percent_accepted|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+              </div>
+              {% if accepted_count > accepted_target and accepted_target > 0 %}
+              <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
+                <i class="bi bi-trophy-fill"></i> Goal Exceeded
+              </span>
+              {% elif accepted_count == accepted_target and accepted_target > 0 %}
+              <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
+                <i class="bi bi-check-circle-fill"></i> Goal Met
+              </span>
+              {% elif accepted_count > 0 %}
+              <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
+                <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ percent_accepted|default_if_none:0 }}%
+              </span>
+              {% else %}
+              <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
+                <i class="bi bi-slash-circle"></i> Not Started
+              </span>
+              {% endif %}
+            </div>
+          </div>
+          <!-- Conversation -->
+          <div class="row align-items-center mb-2">
+            <div class="col-auto d-flex align-items-center" style="min-width: 140px;">
+              <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
+                {% if conversation_count > conversation_target and conversation_target > 0 %} pill-exceeded
+                {% elif conversation_count == conversation_target and conversation_target > 0 %} pill-success
+                {% elif conversation_count > 0 %} pill-inprogress
+                {% else %} pill-notstarted{% endif %}">
+                {{ conversation_count }} / {{ conversation_target }}
+              </span>
+              <span class="text-warning small ms-2">Conversation</span>
+            </div>
+            <div class="col d-flex align-items-center">
+              <div class="progress w-100" style="height: 18px;">
+                <div class="progress-bar bg-warning text-dark" role="progressbar"
+                  style="width: {{ percent_conversed|default_if_none:0 }}%;"
+                  aria-valuenow="{{ percent_conversed|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+              </div>
+              {% if conversation_count > conversation_target and conversation_target > 0 %}
+              <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
+                <i class="bi bi-trophy-fill"></i> Goal Exceeded
+              </span>
+              {% elif conversation_count == conversation_target and conversation_target > 0 %}
+              <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
+                <i class="bi bi-check-circle-fill"></i> Goal Met
+              </span>
+              {% elif conversation_count > 0 %}
+              <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
+                <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ percent_conversed|default_if_none:0 }}%
+              </span>
+              {% else %}
+              <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
+                <i class="bi bi-slash-circle"></i> Not Started
+              </span>
+              {% endif %}
             </div>
           </div>
         </div>
-        {% if num_contacts > max_contacts and max_contacts > 0 %}
-          <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-trophy-fill"></i> Goal Exceeded
-          </span>
-        {% elif num_contacts == max_contacts and max_contacts > 0 %}
-          <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-check-circle-fill"></i> Goal Met
-          </span>
-        {% elif num_contacts > 0 %}
-          <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ networking_progress|default_if_none:0 }}%
-          </span>
-        {% else %}
-          <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-slash-circle"></i> Not Started
-          </span>
-        {% endif %}
       </div>
     </a>
 
     <!-- Job Applications -->
-    <a href="{% url 'applications' %}" class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
+    <a href="{% url 'applications' %}"
+      class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
       <div class="dashboard-progress-row px-4 py-4 d-flex align-items-center gap-3">
         <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
           <i class="bi bi-briefcase me-2"></i>
           <strong>Job Applications</strong>
-          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Number of job applications you submitted this week." class="ms-2">
+          <span data-bs-toggle="tooltip" data-bs-placement="top"
+            title="Number of job applications you submitted this week." class="ms-2">
             <i class="bi bi-info-circle" style="cursor:pointer;"></i>
           </span>
         </span>
-        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_applications > max_applications and max_applications > 0 %} pill-exceeded{% elif num_applications == max_applications and max_applications > 0 %} pill-success{% elif num_applications > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
+        <span
+          class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_applications > max_applications and max_applications > 0 %} pill-exceeded{% elif num_applications == max_applications and max_applications > 0 %} pill-success{% elif num_applications > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
           {{ num_applications }} / {{ max_applications }}
         </span>
         <div class="flex-grow-1 d-flex align-items-center" style="min-width:120px;">
           <div class="progress w-100" style="height: 20px;">
-            <div class="progress-bar{% if num_applications > max_applications and max_applications > 0 %} bg-exceeded{% elif num_applications == max_applications and max_applications > 0 %} bg-success{% elif num_applications > 0 %} bg-inprogress{% else %} bg-primary{% endif %}"
-                role="progressbar"
-                style="width: {{ applications_progress|default_if_none:0 }}%;"
-                aria-valuenow="{{ applications_progress|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
+            <div
+              class="progress-bar{% if num_applications > max_applications and max_applications > 0 %} bg-exceeded{% elif num_applications == max_applications and max_applications > 0 %} bg-success{% elif num_applications > 0 %} bg-inprogress{% else %} bg-primary{% endif %}"
+              role="progressbar" style="width: {{ applications_progress|default_if_none:0 }}%;"
+              aria-valuenow="{{ applications_progress|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
             </div>
           </div>
         </div>
         {% if num_applications > max_applications and max_applications > 0 %}
-          <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-trophy-fill"></i> Goal Exceeded
-          </span>
+        <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-trophy-fill"></i> Goal Exceeded
+        </span>
         {% elif num_applications == max_applications and max_applications > 0 %}
-          <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-check-circle-fill"></i> Goal Met
-          </span>
+        <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-check-circle-fill"></i> Goal Met
+        </span>
         {% elif num_applications > 0 %}
-          <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ applications_progress|default_if_none:0 }}%
-          </span>
+        <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ applications_progress|default_if_none:0 }}%
+        </span>
         {% else %}
-          <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-slash-circle"></i> Not Started
-          </span>
+        <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-slash-circle"></i> Not Started
+        </span>
         {% endif %}
       </div>
     </a>
 
     <!-- Direct Approach -->
-    <a href="{% url 'direct_approach' %}" class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
+    <a href="{% url 'direct_approach' %}"
+      class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
       <div class="dashboard-progress-row px-4 py-4 d-flex align-items-center gap-3">
         <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
           <i class="bi bi-send me-2"></i>
           <strong>Direct Approach</strong>
-          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Number of companies you contacted directly this week." class="ms-2">
+          <span data-bs-toggle="tooltip" data-bs-placement="top"
+            title="Number of companies you contacted directly this week." class="ms-2">
             <i class="bi bi-info-circle" style="cursor:pointer;"></i>
           </span>
         </span>
-        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_direct_approach > max_direct_approach and max_direct_approach > 0 %} pill-exceeded{% elif num_direct_approach == max_direct_approach and max_direct_approach > 0 %} pill-success{% elif num_direct_approach > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
+        <span
+          class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_direct_approach > max_direct_approach and max_direct_approach > 0 %} pill-exceeded{% elif num_direct_approach == max_direct_approach and max_direct_approach > 0 %} pill-success{% elif num_direct_approach > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
           {{ num_direct_approach }} / {{ max_direct_approach }}
         </span>
         <div class="flex-grow-1 d-flex align-items-center" style="min-width:120px;">
           <div class="progress w-100" style="height: 20px;">
-            <div class="progress-bar{% if num_direct_approach > max_direct_approach and max_direct_approach > 0 %} bg-exceeded{% elif num_direct_approach == max_direct_approach and max_direct_approach > 0 %} bg-success{% elif num_direct_approach > 0 %} bg-inprogress{% else %} bg-primary{% endif %}"
-                role="progressbar"
-                style="width: {{ direct_approach_progress|default_if_none:0 }}%;"
-                aria-valuenow="{{ direct_approach_progress|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
+            <div
+              class="progress-bar{% if num_direct_approach > max_direct_approach and max_direct_approach > 0 %} bg-exceeded{% elif num_direct_approach == max_direct_approach and max_direct_approach > 0 %} bg-success{% elif num_direct_approach > 0 %} bg-inprogress{% else %} bg-primary{% endif %}"
+              role="progressbar" style="width: {{ direct_approach_progress|default_if_none:0 }}%;"
+              aria-valuenow="{{ direct_approach_progress|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
             </div>
           </div>
         </div>
         {% if num_direct_approach > max_direct_approach and max_direct_approach > 0 %}
-          <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-trophy-fill"></i> Goal Exceeded
-          </span>
+        <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-trophy-fill"></i> Goal Exceeded
+        </span>
         {% elif num_direct_approach == max_direct_approach and max_direct_approach > 0 %}
-          <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-check-circle-fill"></i> Goal Met
-          </span>
+        <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-check-circle-fill"></i> Goal Met
+        </span>
         {% elif num_direct_approach > 0 %}
-          <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ direct_approach_progress|default_if_none:0 }}%
-          </span>
+        <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ direct_approach_progress|default_if_none:0 }}%
+        </span>
         {% else %}
-          <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-slash-circle"></i> Not Started
-          </span>
+        <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-slash-circle"></i> Not Started
+        </span>
         {% endif %}
       </div>
     </a>
 
     <!-- LinkedIn Posts -->
-    <a href="{% url 'linkedin_posts' %}" class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
+    <a href="{% url 'linkedin_posts' %}"
+      class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
       <div class="dashboard-progress-row px-4 py-4 d-flex align-items-center gap-3">
         <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
           <i class="bi bi-linkedin me-2"></i>
           <strong>LinkedIn Posts</strong>
-          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Number of LinkedIn posts you made this week." class="ms-2">
+          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Number of LinkedIn posts you made this week."
+            class="ms-2">
             <i class="bi bi-info-circle" style="cursor:pointer;"></i>
           </span>
         </span>
-        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_linkedin_posts > max_linkedin_posts and max_linkedin_posts > 0 %} pill-exceeded{% elif num_linkedin_posts == max_linkedin_posts and max_linkedin_posts > 0 %} pill-success{% elif num_linkedin_posts > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
+        <span
+          class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_linkedin_posts > max_linkedin_posts and max_linkedin_posts > 0 %} pill-exceeded{% elif num_linkedin_posts == max_linkedin_posts and max_linkedin_posts > 0 %} pill-success{% elif num_linkedin_posts > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
           {{ num_linkedin_posts }} / {{ max_linkedin_posts }}
         </span>
         <div class="flex-grow-1 d-flex align-items-center" style="min-width:120px;">
           <div class="progress w-100" style="height: 20px;">
-            <div class="progress-bar{% if num_linkedin_posts > max_linkedin_posts and max_linkedin_posts > 0 %} bg-exceeded{% elif num_linkedin_posts == max_linkedin_posts and max_linkedin_posts > 0 %} bg-success{% elif num_linkedin_posts > 0 %} bg-inprogress{% else %} bg-primary{% endif %}"
-                role="progressbar"
-                style="width: {{ linkedin_posts_progress|default_if_none:0 }}%;"
-                aria-valuenow="{{ linkedin_posts_progress|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
+            <div
+              class="progress-bar{% if num_linkedin_posts > max_linkedin_posts and max_linkedin_posts > 0 %} bg-exceeded{% elif num_linkedin_posts == max_linkedin_posts and max_linkedin_posts > 0 %} bg-success{% elif num_linkedin_posts > 0 %} bg-inprogress{% else %} bg-primary{% endif %}"
+              role="progressbar" style="width: {{ linkedin_posts_progress|default_if_none:0 }}%;"
+              aria-valuenow="{{ linkedin_posts_progress|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
             </div>
           </div>
         </div>
         {% if num_linkedin_posts > max_linkedin_posts and max_linkedin_posts > 0 %}
-          <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-trophy-fill"></i> Goal Exceeded
-          </span>
+        <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-trophy-fill"></i> Goal Exceeded
+        </span>
         {% elif num_linkedin_posts == max_linkedin_posts and max_linkedin_posts > 0 %}
-          <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-check-circle-fill"></i> Goal Met
-          </span>
+        <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-check-circle-fill"></i> Goal Met
+        </span>
         {% elif num_linkedin_posts > 0 %}
-          <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ linkedin_posts_progress|default_if_none:0 }}%
-          </span>
+        <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ linkedin_posts_progress|default_if_none:0 }}%
+        </span>
         {% else %}
-          <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0">
-            <i class="bi bi-slash-circle"></i> Not Started
-          </span>
+        <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-slash-circle"></i> Not Started
+        </span>
         {% endif %}
       </div>
     </a>
@@ -186,32 +287,38 @@
     <hr class="my-4">
 
     <!-- Recruiters -->
-    <a href="{% url 'recruiters' %}" class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
+    <a href="{% url 'recruiters' %}"
+      class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
       <div class="dashboard-progress-row px-4 py-4 d-flex align-items-center gap-3">
         <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
           <i class="bi bi-person-badge me-2"></i>
           <strong>Recruiters</strong>
-          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Number of recruiter contacts you received this week." class="ms-2">
+          <span data-bs-toggle="tooltip" data-bs-placement="top"
+            title="Number of recruiter contacts you received this week." class="ms-2">
             <i class="bi bi-info-circle" style="cursor:pointer;"></i>
           </span>
         </span>
-        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_recruiters > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
+        <span
+          class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_recruiters > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
           {{ num_recruiters }}
         </span>
       </div>
     </a>
 
     <!-- Interviews -->
-    <a href="{% url 'interviews' %}" class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
+    <a href="{% url 'interviews' %}"
+      class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
       <div class="dashboard-progress-row px-4 py-4 d-flex align-items-center gap-3">
         <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
           <i class="bi bi-chat-dots me-2"></i>
           <strong>Interviews</strong>
-          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Number of interviews you were invited to this week." class="ms-2">
+          <span data-bs-toggle="tooltip" data-bs-placement="top"
+            title="Number of interviews you were invited to this week." class="ms-2">
             <i class="bi bi-info-circle" style="cursor:pointer;"></i>
           </span>
         </span>
-        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_interviews > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
+        <span
+          class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_interviews > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
           {{ num_interviews }}
         </span>
       </div>
@@ -220,24 +327,56 @@
 
   <h4 class="mt-4">Recent Job Applications</h4>
   <ul class="list-group mb-4">
-      {% for app in recent_applications %}
-          <li class="list-group-item">
-              <strong>{{ app.company_name }}</strong> — {{ app.job_title }} <span class="text-muted">({{ app.date_applied }})</span>
-          </li>
-      {% empty %}
-          <li class="list-group-item">No recent applications.</li>
-      {% endfor %}
+    {% for app in recent_applications %}
+    <li class="list-group-item">
+      <strong>{{ app.company_name }}</strong> — {{ app.job_title }} <span class="text-muted">({{ app.date_applied
+        }})</span>
+    </li>
+    {% empty %}
+    <li class="list-group-item">No recent applications.</li>
+    {% endfor %}
   </ul>
+
+  <!-- Networking Progress Card -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Networking Progress</h5>
+      <div class="d-flex justify-content-between mb-2">
+        <small>Requests Sent: {{ sent_count }}/{{ networking_target }}</small>
+        <small>Accepted: {{ accepted_count }}/{{ networking_target }}</small>
+        <small>Conversations: {{ conversation_count }}/{{ networking_target }}</small>
+      </div>
+      <div class="progress" style="height: 28px;">
+        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ percent_sent }}%;"
+          aria-valuenow="{{ percent_sent }}" aria-valuemin="0" aria-valuemax="100">
+          {% if percent_sent > 10 %}Sent{% endif %}
+        </div>
+        <div class="progress-bar bg-success" role="progressbar" style="width: {{ percent_accepted }}%;"
+          aria-valuenow="{{ percent_accepted }}" aria-valuemin="0" aria-valuemax="100">
+          {% if percent_accepted > 10 %}Accepted{% endif %}
+        </div>
+        <div class="progress-bar bg-warning text-dark" role="progressbar" style="width: {{ percent_conversed }}%;"
+          aria-valuenow="{{ percent_conversed }}" aria-valuemin="0" aria-valuemax="100">
+          {% if percent_conversed > 10 %}Conversations{% endif %}
+        </div>
+      </div>
+      <div class="d-flex justify-content-between mt-2">
+        <span class="badge bg-primary">Sent</span>
+        <span class="badge bg-success">Accepted</span>
+        <span class="badge bg-warning text-dark">Conversations</span>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 {% block extra_js %}
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  // Enable Bootstrap tooltips
-  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-  tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-    new bootstrap.Tooltip(tooltipTriggerEl)
-  })
-});
+  document.addEventListener("DOMContentLoaded", function () {
+    // Enable Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+      new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+  });
 </script>
 {% endblock %}

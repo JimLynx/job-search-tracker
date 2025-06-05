@@ -28,11 +28,13 @@ class JobApplication(models.Model):
 class NetworkingContact(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     contact_name = models.CharField(max_length=100)
-    contact_role = models.CharField(max_length=100, blank=True)  # Add this line
-    company = models.CharField(max_length=100, blank=True)       # Add this line
-    date = models.DateField()
-    accepted = models.BooleanField(default=False)  # Add this field
+    contact_role = models.CharField(max_length=100, blank=True)
+    company = models.CharField(max_length=100, blank=True)
+    request_sent = models.DateField()  # NEW: When the request was sent
+    accepted = models.BooleanField(default=False)
+    accepted_date = models.DateField(null=True, blank=True)  # Optional: when accepted
     conversation = models.BooleanField(default=False)
+    conversation_date = models.DateField(null=True, blank=True)  # Optional: when conversation happened
     outcome = models.CharField(max_length=255, blank=True)
     notes = models.TextField(blank=True)
 
@@ -143,4 +145,8 @@ class LinkedInConnection(models.Model):
 class NetworkingContactForm(forms.ModelForm):
     class Meta:
         model = NetworkingContact
-        fields = ['date', 'contact_name', 'conversation', 'outcome', 'notes', 'accepted']
+        fields = [
+            'request_sent', 'contact_name', 'contact_role', 'company',
+            'accepted', 'accepted_date', 'conversation', 'conversation_date',
+            'outcome', 'notes'
+        ]
