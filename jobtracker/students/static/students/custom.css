@@ -133,6 +133,19 @@ a:hover, .link-primary:hover {
   align-items: center;
   gap: 0.4em;
 }
+.badge-status-fixed {
+  min-width: 180px;
+  max-width: 200px;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 1em;
+  margin-left: 1.5rem;
+  margin-right: 0;
+  flex-shrink: 0;
+}
+.d-flex.align-items-center > .badge-status-fixed {
+  margin-left: 1rem;
+}
 .badge-exceeded {
   background: #ffc107 !important; /* Gold */
   color: #212529 !important;
@@ -209,6 +222,31 @@ a:hover, .link-primary:hover {
 /* Gold for goal exceeded */
 .progress-bar.bg-exceeded {
   background-color: #ffc107 !important; /* Bootstrap warning/gold */
+}
+.progress {
+  height: 20px !important;
+  border-radius: 10px;
+  background: #f4f7fe;
+  margin-bottom: 0;
+  margin-left: 0 !important; /* Align bar left */
+  margin-right: 0 !important;
+}
+.progress-label {
+  position: absolute;
+  width: 100%;
+  left: 0;
+  top: 0;
+  color: #fff;
+  font-size: 1.1em;
+  text-align: center;
+  line-height: 20px;
+  font-weight: 600;
+  pointer-events: none;
+  text-shadow: 0 1px 2px #0008;
+}
+.progress-bar {
+  border-radius: 10px;
+  transition: width 0.6s cubic-bezier(.4,2.08,.55,.44);
 }
 
 /* Pagination */
@@ -333,9 +371,13 @@ h2 + .section-toolbar {
 
 /* Pills with min-width */
 .pill-minwidth {
-  min-width: 70px;
-  display: inline-block;
+  min-width: 80px;
+  max-width: 90px;
   text-align: center;
+  font-weight: 600;
+  font-size: 1.1em;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 /* Pills for progress status */
@@ -354,4 +396,25 @@ h2 + .section-toolbar {
 .pill-notstarted {
   background-color: #dc3545 !important; /* Bootstrap red */
   color: #fff !important;
+}
+
+/* Dashboard row links */
+.dashboard-row-link {
+  transition: background 0.1s;
+}
+.dashboard-row-link:hover {
+  background: #f5f5f5;
+  cursor: pointer;
+}
+.dashboard-row-link:hover .dashboard-progress-row {
+  background: #f8f9fa;
+}
+
+.dashboard-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.progress {
+  margin: 0;
 }

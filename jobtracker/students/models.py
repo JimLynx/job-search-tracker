@@ -28,6 +28,8 @@ class JobApplication(models.Model):
 class NetworkingContact(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     contact_name = models.CharField(max_length=100)
+    contact_role = models.CharField(max_length=100, blank=True)  # Add this line
+    company = models.CharField(max_length=100, blank=True)       # Add this line
     date = models.DateField()
     accepted = models.BooleanField(default=False)  # Add this field
     conversation = models.BooleanField(default=False)

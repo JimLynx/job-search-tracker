@@ -62,9 +62,27 @@ class JobApplicationForm(forms.ModelForm):
         return url
 
 class NetworkingContactForm(forms.ModelForm):
+    OUTCOME_CHOICES = [
+        ('Industry insights', 'Industry insights'),
+        ('Technical discussion', 'Technical discussion'),
+        ('Advice / Feedback', 'Advice / Feedback'),
+        ('Role Referral', 'Role Referral'),
+        ('New Contact Introduction', 'New Contact Introduction'),
+    ]
+
+    outcome = forms.ChoiceField(
+        choices=OUTCOME_CHOICES,
+        required=True,
+        label="Outcome",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
     class Meta:
         model = NetworkingContact
-        fields = ['date', 'contact_name', 'conversation', 'outcome', 'notes', 'accepted']
+        fields = [
+            'date', 'contact_name', 'contact_role', 'company',
+            'conversation', 'outcome', 'notes', 'accepted'
+        ]
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'notes': forms.Textarea(attrs={'rows': 2}),
