@@ -1,5 +1,6 @@
 {% extends "students/base.html" %}
 {% load static %}
+
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <div class="container mt-4">
@@ -14,144 +15,132 @@
   </div>
   <div class="list-group">
 
-    <!-- Networking Contacts: Single Row with Sub-Rows -->
-    <a href="{% url 'networking' %}"
-      class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
-      <div class="dashboard-progress-row px-4 py-4">
-        <!-- Main label -->
-        <div class="d-flex align-items-center mb-2">
-          <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
-            <i class="bi bi-people me-2"></i>
-            <strong>Networking Contacts</strong>
-            <span data-bs-toggle="tooltip" data-bs-placement="top" title="Networking activity this week." class="ms-2">
-              <i class="bi bi-info-circle" style="cursor:pointer;"></i>
-            </span>
+    <!-- Networking Contacts -->
+    <a href="{% url 'networking' %}" class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
+      <!-- Heading row -->
+      <div class="dashboard-progress-row px-4 pt-4 pb-2 d-flex align-items-center gap-3">
+        <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
+          <i class="bi bi-people me-2"></i>
+          <strong>Networking Contacts</strong>
+          <span data-bs-toggle="tooltip" data-bs-placement="top" title="Networking activity this week." class="ms-2">
+            <i class="bi bi-info-circle" style="cursor:pointer;"></i>
           </span>
-        </div>
-        <!-- Sub-rows -->
-        <div class="container-fluid px-0">
-          <!-- Sent -->
-          <div class="row align-items-center mb-2">
-            <div class="col-auto d-flex align-items-center" style="min-width: 140px;">
-              <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
-                {% if sent_count > sent_target and sent_target > 0 %} pill-exceeded
-                {% elif sent_count == sent_target and sent_target > 0 %} pill-success
-                {% elif sent_count > 0 %} pill-inprogress
-                {% else %} pill-notstarted{% endif %}">
-                {{ sent_count }} / {{ sent_target }}
-              </span>
-              <span class="text-primary small ms-2">Sent</span>
-            </div>
-            <div class="col d-flex align-items-center">
-              <div class="progress w-100" style="height: 18px;">
-                <div class="progress-bar bg-primary" role="progressbar"
-                  style="width: {{ percent_sent|default_if_none:0 }}%;"
-                  aria-valuenow="{{ percent_sent|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
-                </div>
-              </div>
-              {% if sent_count > sent_target and sent_target > 0 %}
-              <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
-                <i class="bi bi-trophy-fill"></i> Goal Exceeded
-              </span>
-              {% elif sent_count == sent_target and sent_target > 0 %}
-              <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
-                <i class="bi bi-check-circle-fill"></i> Goal Met
-              </span>
-              {% elif sent_count > 0 %}
-              <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
-                <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ percent_sent|default_if_none:0 }}%
-              </span>
-              {% else %}
-              <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
-                <i class="bi bi-slash-circle"></i> Not Started
-              </span>
-              {% endif %}
-            </div>
-          </div>
-          <!-- Accepted -->
-          <div class="row align-items-center mb-2">
-            <div class="col-auto d-flex align-items-center" style="min-width: 140px;">
-              <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
-                {% if accepted_count > accepted_target and accepted_target > 0 %} pill-exceeded
-                {% elif accepted_count == accepted_target and accepted_target > 0 %} pill-success
-                {% elif accepted_count > 0 %} pill-inprogress
-                {% else %} pill-notstarted{% endif %}">
-                {{ accepted_count }} / {{ accepted_target }}
-              </span>
-              <span class="text-success small ms-2">Accepted</span>
-            </div>
-            <div class="col d-flex align-items-center">
-              <div class="progress w-100" style="height: 18px;">
-                <div class="progress-bar bg-success" role="progressbar"
-                  style="width: {{ percent_accepted|default_if_none:0 }}%;"
-                  aria-valuenow="{{ percent_accepted|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
-                </div>
-              </div>
-              {% if accepted_count > accepted_target and accepted_target > 0 %}
-              <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
-                <i class="bi bi-trophy-fill"></i> Goal Exceeded
-              </span>
-              {% elif accepted_count == accepted_target and accepted_target > 0 %}
-              <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
-                <i class="bi bi-check-circle-fill"></i> Goal Met
-              </span>
-              {% elif accepted_count > 0 %}
-              <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
-                <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ percent_accepted|default_if_none:0 }}%
-              </span>
-              {% else %}
-              <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
-                <i class="bi bi-slash-circle"></i> Not Started
-              </span>
-              {% endif %}
-            </div>
-          </div>
-          <!-- Conversation -->
-          <div class="row align-items-center mb-2">
-            <div class="col-auto d-flex align-items-center" style="min-width: 140px;">
-              <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
-                {% if conversation_count > conversation_target and conversation_target > 0 %} pill-exceeded
-                {% elif conversation_count == conversation_target and conversation_target > 0 %} pill-success
-                {% elif conversation_count > 0 %} pill-inprogress
-                {% else %} pill-notstarted{% endif %}">
-                {{ conversation_count }} / {{ conversation_target }}
-              </span>
-              <span class="text-warning small ms-2">Conversation</span>
-            </div>
-            <div class="col d-flex align-items-center">
-              <div class="progress w-100" style="height: 18px;">
-                <div class="progress-bar bg-warning text-dark" role="progressbar"
-                  style="width: {{ percent_conversed|default_if_none:0 }}%;"
-                  aria-valuenow="{{ percent_conversed|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
-                </div>
-              </div>
-              {% if conversation_count > conversation_target and conversation_target > 0 %}
-              <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
-                <i class="bi bi-trophy-fill"></i> Goal Exceeded
-              </span>
-              {% elif conversation_count == conversation_target and conversation_target > 0 %}
-              <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
-                <i class="bi bi-check-circle-fill"></i> Goal Met
-              </span>
-              {% elif conversation_count > 0 %}
-              <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
-                <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ percent_conversed|default_if_none:0 }}%
-              </span>
-              {% else %}
-              <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0 d-none d-md-inline">
-                <i class="bi bi-slash-circle"></i> Not Started
-              </span>
-              {% endif %}
+        </span>
+      </div>
+      <!-- Sent row -->
+      <div class="dashboard-progress-row px-4 py-2 d-flex align-items-center gap-3">
+        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
+          {% if sent_count > sent_target and sent_target > 0 %} pill-exceeded
+          {% elif sent_count == sent_target and sent_target > 0 %} pill-success
+          {% elif sent_count > 0 %} pill-inprogress
+          {% else %} pill-notstarted{% endif %}">
+          {{ sent_count }} / {{ sent_target }}
+        </span>
+        <span class="ms-2 me-2" style="min-width:90px; color:var(--orange-500); font-weight:600;">Sent</span>
+        <div class="flex-grow-1 d-flex align-items-center" style="min-width:120px;">
+          <div class="progress w-100" style="height: 20px;">
+            <div class="progress-bar bg-primary" role="progressbar"
+              style="width: {{ percent_sent|default_if_none:0 }}%;"
+              aria-valuenow="{{ percent_sent|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
             </div>
           </div>
         </div>
+        {% if sent_count > sent_target and sent_target > 0 %}
+        <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-trophy-fill"></i> Goal Exceeded
+        </span>
+        {% elif sent_count == sent_target and sent_target > 0 %}
+        <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-check-circle-fill"></i> Goal Met
+        </span>
+        {% elif sent_count > 0 %}
+        <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ percent_sent|default_if_none:0 }}%
+        </span>
+        {% else %}
+        <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-slash-circle"></i> Not Started
+        </span>
+        {% endif %}
+      </div>
+      <!-- Accepted row -->
+      <div class="dashboard-progress-row px-4 py-2 d-flex align-items-center gap-3">
+        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
+          {% if accepted_count > accepted_target and accepted_target > 0 %} pill-exceeded
+          {% elif accepted_count == accepted_target and accepted_target > 0 %} pill-success
+          {% elif accepted_count > 0 %} pill-inprogress
+          {% else %} pill-notstarted{% endif %}">
+          {{ accepted_count }} / {{ accepted_target }}
+        </span>
+        <span class="ms-2 me-2" style="min-width:90px; color:#198754; font-weight:600;">Accepted</span>
+        <div class="flex-grow-1 d-flex align-items-center" style="min-width:120px;">
+          <div class="progress w-100" style="height: 20px;">
+            <div class="progress-bar bg-success" role="progressbar"
+              style="width: {{ percent_accepted|default_if_none:0 }}%;"
+              aria-valuenow="{{ percent_accepted|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
+            </div>
+          </div>
+        </div>
+        {% if accepted_count > accepted_target and accepted_target > 0 %}
+        <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-trophy-fill"></i> Goal Exceeded
+        </span>
+        {% elif accepted_count == accepted_target and accepted_target > 0 %}
+        <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-check-circle-fill"></i> Goal Met
+        </span>
+        {% elif accepted_count > 0 %}
+        <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ percent_accepted|default_if_none:0 }}%
+        </span>
+        {% else %}
+        <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-slash-circle"></i> Not Started
+        </span>
+        {% endif %}
+      </div>
+      <!-- Conversation row -->
+      <div class="dashboard-progress-row px-4 py-2 d-flex align-items-center gap-3 mb-4">
+        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
+          {% if conversation_count > conversation_target and conversation_target > 0 %} pill-exceeded
+          {% elif conversation_count == conversation_target and conversation_target > 0 %} pill-success
+          {% elif conversation_count > 0 %} pill-inprogress
+          {% else %} pill-notstarted{% endif %}">
+          {{ conversation_count }} / {{ conversation_target }}
+        </span>
+        <span class="ms-2 me-2" style="min-width:90px; color:var(--orange-500); font-weight:600;">Conversation</span>
+        <div class="flex-grow-1 d-flex align-items-center" style="min-width:120px;">
+          <div class="progress w-100" style="height: 20px;">
+            <div class="progress-bar bg-warning text-dark" role="progressbar"
+              style="width: {{ percent_conversed|default_if_none:0 }}%;"
+              aria-valuenow="{{ percent_conversed|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
+            </div>
+          </div>
+        </div>
+        {% if conversation_count > conversation_target and conversation_target > 0 %}
+        <span class="badge badge-status badge-exceeded badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-trophy-fill"></i> Goal Exceeded
+        </span>
+        {% elif conversation_count == conversation_target and conversation_target > 0 %}
+        <span class="badge badge-status badge-met badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-check-circle-fill"></i> Goal Met
+        </span>
+        {% elif conversation_count > 0 %}
+        <span class="badge badge-status badge-inprogress badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-hourglass-split"></i> In Progress &ndash; {{ percent_conversed|default_if_none:0 }}%
+        </span>
+        {% else %}
+        <span class="badge badge-status badge-notstarted badge-status-fixed ms-3 flex-shrink-0">
+          <i class="bi bi-slash-circle"></i> Not Started
+        </span>
+        {% endif %}
       </div>
     </a>
 
     <!-- Job Applications -->
-    <a href="{% url 'applications' %}"
-      class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
-      <div class="dashboard-progress-row px-4 py-4 d-flex align-items-center gap-3">
+    <a href="{% url 'applications' %}" class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
+      <!-- Heading row -->
+      <div class="dashboard-progress-row px-4 pt-4 pb-2 d-flex align-items-center gap-3">
         <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
           <i class="bi bi-briefcase me-2"></i>
           <strong>Job Applications</strong>
@@ -160,14 +149,23 @@
             <i class="bi bi-info-circle" style="cursor:pointer;"></i>
           </span>
         </span>
-        <span
-          class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_applications > max_applications and max_applications > 0 %} pill-exceeded{% elif num_applications == max_applications and max_applications > 0 %} pill-success{% elif num_applications > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
+      </div>
+      <div class="dashboard-progress-row px-4 py-2 d-flex align-items-center gap-3 mb-4">
+        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
+          {% if num_applications > max_applications and max_applications > 0 %} pill-exceeded
+          {% elif num_applications == max_applications and max_applications > 0 %} pill-success
+          {% elif num_applications > 0 %} pill-inprogress
+          {% else %} pill-notstarted{% endif %}">
           {{ num_applications }} / {{ max_applications }}
         </span>
+        <span class="ms-2 me-2" style="min-width:90px; color:var(--orange-500); font-weight:600;">Applied</span>
         <div class="flex-grow-1 d-flex align-items-center" style="min-width:120px;">
           <div class="progress w-100" style="height: 20px;">
-            <div
-              class="progress-bar{% if num_applications > max_applications and max_applications > 0 %} bg-exceeded{% elif num_applications == max_applications and max_applications > 0 %} bg-success{% elif num_applications > 0 %} bg-inprogress{% else %} bg-primary{% endif %}"
+            <div class="progress-bar
+              {% if num_applications > max_applications and max_applications > 0 %} bg-exceeded
+              {% elif num_applications == max_applications and max_applications > 0 %} bg-success
+              {% elif num_applications > 0 %} bg-inprogress
+              {% else %} bg-primary{% endif %}"
               role="progressbar" style="width: {{ applications_progress|default_if_none:0 }}%;"
               aria-valuenow="{{ applications_progress|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
             </div>
@@ -194,9 +192,9 @@
     </a>
 
     <!-- Direct Approach -->
-    <a href="{% url 'direct_approach' %}"
-      class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
-      <div class="dashboard-progress-row px-4 py-4 d-flex align-items-center gap-3">
+    <a href="{% url 'direct_approach' %}" class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
+      <!-- Heading row -->
+      <div class="dashboard-progress-row px-4 pt-4 pb-2 d-flex align-items-center gap-3">
         <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
           <i class="bi bi-send me-2"></i>
           <strong>Direct Approach</strong>
@@ -205,14 +203,23 @@
             <i class="bi bi-info-circle" style="cursor:pointer;"></i>
           </span>
         </span>
-        <span
-          class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_direct_approach > max_direct_approach and max_direct_approach > 0 %} pill-exceeded{% elif num_direct_approach == max_direct_approach and max_direct_approach > 0 %} pill-success{% elif num_direct_approach > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
+      </div>
+      <div class="dashboard-progress-row px-4 py-2 d-flex align-items-center gap-3 mb-4">
+        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
+          {% if num_direct_approach > max_direct_approach and max_direct_approach > 0 %} pill-exceeded
+          {% elif num_direct_approach == max_direct_approach and max_direct_approach > 0 %} pill-success
+          {% elif num_direct_approach > 0 %} pill-inprogress
+          {% else %} pill-notstarted{% endif %}">
           {{ num_direct_approach }} / {{ max_direct_approach }}
         </span>
+        <span class="ms-2 me-2" style="min-width:90px; color:var(--orange-500); font-weight:600;">Contacted</span>
         <div class="flex-grow-1 d-flex align-items-center" style="min-width:120px;">
           <div class="progress w-100" style="height: 20px;">
-            <div
-              class="progress-bar{% if num_direct_approach > max_direct_approach and max_direct_approach > 0 %} bg-exceeded{% elif num_direct_approach == max_direct_approach and max_direct_approach > 0 %} bg-success{% elif num_direct_approach > 0 %} bg-inprogress{% else %} bg-primary{% endif %}"
+            <div class="progress-bar
+              {% if num_direct_approach > max_direct_approach and max_direct_approach > 0 %} bg-exceeded
+              {% elif num_direct_approach == max_direct_approach and max_direct_approach > 0 %} bg-success
+              {% elif num_direct_approach > 0 %} bg-inprogress
+              {% else %} bg-primary{% endif %}"
               role="progressbar" style="width: {{ direct_approach_progress|default_if_none:0 }}%;"
               aria-valuenow="{{ direct_approach_progress|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
             </div>
@@ -239,9 +246,9 @@
     </a>
 
     <!-- LinkedIn Posts -->
-    <a href="{% url 'linkedin_posts' %}"
-      class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
-      <div class="dashboard-progress-row px-4 py-4 d-flex align-items-center gap-3">
+    <a href="{% url 'linkedin_posts' %}" class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
+      <!-- Heading row -->
+      <div class="dashboard-progress-row px-4 pt-4 pb-2 d-flex align-items-center gap-3">
         <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
           <i class="bi bi-linkedin me-2"></i>
           <strong>LinkedIn Posts</strong>
@@ -250,14 +257,23 @@
             <i class="bi bi-info-circle" style="cursor:pointer;"></i>
           </span>
         </span>
-        <span
-          class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_linkedin_posts > max_linkedin_posts and max_linkedin_posts > 0 %} pill-exceeded{% elif num_linkedin_posts == max_linkedin_posts and max_linkedin_posts > 0 %} pill-success{% elif num_linkedin_posts > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
+      </div>
+      <div class="dashboard-progress-row px-4 py-2 d-flex align-items-center gap-3 mb-4">
+        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
+          {% if num_linkedin_posts > max_linkedin_posts and max_linkedin_posts > 0 %} pill-exceeded
+          {% elif num_linkedin_posts == max_linkedin_posts and max_linkedin_posts > 0 %} pill-success
+          {% elif num_linkedin_posts > 0 %} pill-inprogress
+          {% else %} pill-notstarted{% endif %}">
           {{ num_linkedin_posts }} / {{ max_linkedin_posts }}
         </span>
+        <span class="ms-2 me-2" style="min-width:90px; color:var(--orange-500); font-weight:600;">Posted</span>
         <div class="flex-grow-1 d-flex align-items-center" style="min-width:120px;">
           <div class="progress w-100" style="height: 20px;">
-            <div
-              class="progress-bar{% if num_linkedin_posts > max_linkedin_posts and max_linkedin_posts > 0 %} bg-exceeded{% elif num_linkedin_posts == max_linkedin_posts and max_linkedin_posts > 0 %} bg-success{% elif num_linkedin_posts > 0 %} bg-inprogress{% else %} bg-primary{% endif %}"
+            <div class="progress-bar
+              {% if num_linkedin_posts > max_linkedin_posts and max_linkedin_posts > 0 %} bg-exceeded
+              {% elif num_linkedin_posts == max_linkedin_posts and max_linkedin_posts > 0 %} bg-success
+              {% elif num_linkedin_posts > 0 %} bg-inprogress
+              {% else %} bg-primary{% endif %}"
               role="progressbar" style="width: {{ linkedin_posts_progress|default_if_none:0 }}%;"
               aria-valuenow="{{ linkedin_posts_progress|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
             </div>
@@ -287,8 +303,7 @@
     <hr class="my-4">
 
     <!-- Recruiters -->
-    <a href="{% url 'recruiters' %}"
-      class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
+    <a href="{% url 'recruiters' %}" class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
       <div class="dashboard-progress-row px-4 py-4 d-flex align-items-center gap-3">
         <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
           <i class="bi bi-person-badge me-2"></i>
@@ -298,16 +313,15 @@
             <i class="bi bi-info-circle" style="cursor:pointer;"></i>
           </span>
         </span>
-        <span
-          class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_recruiters > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
+        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
+          {% if num_recruiters > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
           {{ num_recruiters }}
         </span>
       </div>
     </a>
 
     <!-- Interviews -->
-    <a href="{% url 'interviews' %}"
-      class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
+    <a href="{% url 'interviews' %}" class="list-group-item dashboard-row-link text-decoration-none text-reset mb-4 p-0">
       <div class="dashboard-progress-row px-4 py-4 d-flex align-items-center gap-3">
         <span class="d-flex align-items-center flex-shrink-0" style="min-width:220px;">
           <i class="bi bi-chat-dots me-2"></i>
@@ -317,8 +331,8 @@
             <i class="bi bi-info-circle" style="cursor:pointer;"></i>
           </span>
         </span>
-        <span
-          class="badge rounded-pill pill-minwidth flex-shrink-0 text-center{% if num_interviews > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
+        <span class="badge rounded-pill pill-minwidth flex-shrink-0 text-center
+          {% if num_interviews > 0 %} pill-inprogress{% else %} pill-notstarted{% endif %}">
           {{ num_interviews }}
         </span>
       </div>
@@ -329,8 +343,7 @@
   <ul class="list-group mb-4">
     {% for app in recent_applications %}
     <li class="list-group-item">
-      <strong>{{ app.company_name }}</strong> — {{ app.job_title }} <span class="text-muted">({{ app.date_applied
-        }})</span>
+      <strong>{{ app.company_name }}</strong> — {{ app.job_title }} <span class="text-muted">({{ app.date_applied }})</span>
     </li>
     {% empty %}
     <li class="list-group-item">No recent applications.</li>
@@ -347,16 +360,13 @@
         <small>Conversations: {{ conversation_count }}/{{ networking_target }}</small>
       </div>
       <div class="progress" style="height: 28px;">
-        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ percent_sent }}%;"
-          aria-valuenow="{{ percent_sent }}" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ percent_sent|default_if_none:0 }}%;" aria-valuenow="{{ percent_sent|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
           {% if percent_sent > 10 %}Sent{% endif %}
         </div>
-        <div class="progress-bar bg-success" role="progressbar" style="width: {{ percent_accepted }}%;"
-          aria-valuenow="{{ percent_accepted }}" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar bg-success" role="progressbar" style="width: {{ percent_accepted|default_if_none:0 }}%;" aria-valuenow="{{ percent_accepted|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
           {% if percent_accepted > 10 %}Accepted{% endif %}
         </div>
-        <div class="progress-bar bg-warning text-dark" role="progressbar" style="width: {{ percent_conversed }}%;"
-          aria-valuenow="{{ percent_conversed }}" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar bg-warning text-dark" role="progressbar" style="width: {{ percent_conversed|default_if_none:0 }}%;" aria-valuenow="{{ percent_conversed|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
           {% if percent_conversed > 10 %}Conversations{% endif %}
         </div>
       </div>
@@ -369,14 +379,16 @@
   </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     // Enable Bootstrap tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
       new bootstrap.Tooltip(tooltipTriggerEl)
-    })
-  });
-</script>
-{% endblock %}
+    })pt>
+  });dblock %}
+</script>{% endblock %}
