@@ -400,46 +400,7 @@ a:hover, .link-primary:hover {
   flex-direction: row; /* Desktop: row by default */
 }
 
-/* Only stack on mobile/tablet */
-@media (max-width: 767.98px) {
-  .dashboard-progress-row {
-    flex-direction: column !important;
-    align-items: stretch !important;
-  }
-  .dashboard-progress-row .badge,
-  .dashboard-progress-row .pill-minwidth,
-  .dashboard-progress-row .badge-status-fixed {
-    font-size: 0.98em !important;
-    padding: 0.4em 0.7em !important;
-    border-radius: 1.2em !important;
-    margin-bottom: 0.3em !important;
-  }
-  .dashboard-progress-row .progress {
-    height: 12px !important;
-    border-radius: 8px !important;
-    margin-bottom: 0.7em !important;
-  }
-  .dashboard-progress-row .row.mb-2 {
-    margin-bottom: 0.7rem !important;
-  }
-  .dashboard-progress-row .col-12.d-flex.align-items-center.mb-1 {
-    margin-bottom: 0.2em !important;
-  }
-  .pill-minwidth {
-    min-width: 0 !important;
-    max-width: none !important;
-    width: auto !important;
-    display: inline-block !important;
-    padding: 0.3em 0.9em !important;
-    font-size: 1em !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-  }
-}
-
-/* Mobile & Tablet: max-width 991.98px (Bootstrap md breakpoint) */
+/* Responsive: Mobile & Tablet (Bootstrap md breakpoint) */
 @media (max-width: 991.98px) {
   .dashboard-progress-row {
     flex-direction: column !important;
@@ -481,95 +442,9 @@ a:hover, .link-primary:hover {
     display: none !important;
   }
 }
+
+/* Optional: For desktop, keep pill-label-row inline */
 .pill-label-row {
-  display: inline-block; /* Default for desktop: does NOT affect layout */
+  display: inline-block;
   vertical-align: middle;
-}
-
-@media (max-width: 991.98px) {
-  .dashboard-progress-row {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 0.2rem !important;
-  }
-  .dashboard-progress-row > .badge,ss-row > .badge,
-  .dashboard-progress-row > .ms-2 {ms-2 {
-    display: inline-block !important;t;
-    margin-bottom: 0 !important;
-    vertical-align: middle !important;!important;
-  }
-  .dashboard-progress-row > .badge + .ms-2,dashboard-progress-row > .badge + .ms-2,
-  .dashboard-progress-row > .badge + .ms-2.me-2 {ess-row > .badge + .ms-2.me-2 {
-    margin-left: 0.5rem !important;ortant;
-  }
-  .dashboard-progress-row > .flex-grow-1 {grow-1 {
-    width: 100% !important;
-    margin-top: 0.3rem !important;mportant;
-    margin-bottom: 0.3rem !important;nt;
-  }
-  .pill-label-row {pill-label-row {
-    display: flex !important;x !important;
-    flex-direction: row !important;tant;
-    align-items: center !important;important;
-    gap: 0.5rem !important;
-    margin-bottom: 0.2rem !important; margin-bottom: 0.2rem !important;
-  }
-  .pill-minwidth {
-    min-width: 0 !important;
-    width: auto !important;
-    padding: 0.3em 1em !important;
-    font-size: 1em !important;t;
-    margin: 0 !important; margin: 0 !important;
-    text-align: center !important;   text-align: center !important;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}  }    height: 14px !important;    margin: 0.2em 0 0.2em 0 !important;    max-width: 180px !important;    min-width: 60px !important;    width: 100% !important;  .dashboard-progress-row .progress {  }    white-space: nowrap !important;    margin: 0 !important;    font-size: 1em !important;  .label-right {  }    white-space: nowrap !important;    white-space: nowrap !important;
-  }
-  .label-right {
-    font-size: 1em !important;
-    margin: 0 !important;
-    white-space: nowrap !important;
-  }
-  .dashboard-progress-row .progress {
-    width: 100% !important;
-    min-width: 60px !important;
-    max-width: 180px !important;
-    margin: 0.2em 0 0.2em 0 !important;
-    height: 14px !important;
-  }
-}
-@media (max-width: 991.98px) {
-  .dashboard-progress-row,
-  .dashboard-progress-row > *,
-  .dashboard-progress-row .badge-status,
-  .dashboard-progress-row .progress,
-  .dashboard-progress-row .pill-minwidth,
-  .dashboard-progress-row .label-right,
-  .dashboard-progress-row .ms-2,
-  .dashboard-progress-row .me-2 {
-    text-align: left !important;
-    align-items: flex-start !important;
-    align-self: flex-start !important;
-    justify-content: flex-start !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-  .dashboard-progress-row .progress, .dashboard-progress-row .progress,
-
-}  }    display: none !important;  .dashboard-progress-row .badge-inprogress {  .dashboard-progress-row .badge-inprogress {
-    display: none !important;
-  }
 }
