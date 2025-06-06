@@ -32,7 +32,7 @@
 <form id="bulk-delete-form" method="post" action="{% url 'bulk_delete_direct_approach' %}">
   {% csrf_token %}
   <div class="table-responsive">
-    <table class="table table-striped table-bordered">
+    <table class="table table-striped table-bordered responsive-table compact-table">
       <thead>
         <tr>
           <th><input type="checkbox" id="select-all"></th>
@@ -47,13 +47,13 @@
       <tbody>
         {% for approach in approaches %}
         <tr>
-          <td><input type="checkbox" name="selected_ids" value="{{ approach.id }}"></td>
-          <td>{{ approach.date }}</td>
-          <td>{{ approach.targeting }}</td>
-          <td>{{ approach.location }}</td>
-          <td>{{ approach.contact }}</td>
-          <td>{{ approach.notes }}</td>
-          <td>
+          <td data-label="Select"><input type="checkbox" name="selected_ids" value="{{ approach.id }}"></td>
+          <td data-label="Date">{{ approach.date }}</td>
+          <td data-label="Company">{{ approach.targeting }}</td>
+          <td data-label="Location">{{ approach.location }}</td>
+          <td data-label="Contact">{{ approach.contact }}</td>
+          <td data-label="Notes">{{ approach.notes }}</td>
+          <td data-label="Actions">
             <a href="{% url 'edit_direct_approach' approach.pk %}" class="btn btn-sm btn-warning">Edit</a>
             <a href="{% url 'delete_direct_approach' approach.pk %}" class="btn btn-sm btn-danger">Delete</a>
           </td>

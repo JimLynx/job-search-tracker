@@ -350,34 +350,6 @@
     {% endfor %}
   </ul>
 
-  <!-- Networking Progress Card -->
-  <div class="card mb-4">
-    <div class="card-body">
-      <h5 class="card-title mb-3">Networking Progress</h5>
-      <div class="d-flex justify-content-between mb-2">
-        <small>Requests Sent: {{ sent_count }}/{{ networking_target }}</small>
-        <small>Accepted: {{ accepted_count }}/{{ networking_target }}</small>
-        <small>Conversations: {{ conversation_count }}/{{ networking_target }}</small>
-      </div>
-      <div class="progress" style="height: 28px;">
-        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ percent_sent|default_if_none:0 }}%;" aria-valuenow="{{ percent_sent|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
-          {% if percent_sent > 10 %}Sent{% endif %}
-        </div>
-        <div class="progress-bar bg-success" role="progressbar" style="width: {{ percent_accepted|default_if_none:0 }}%;" aria-valuenow="{{ percent_accepted|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
-          {% if percent_accepted > 10 %}Accepted{% endif %}
-        </div>
-        <div class="progress-bar bg-warning text-dark" role="progressbar" style="width: {{ percent_conversed|default_if_none:0 }}%;" aria-valuenow="{{ percent_conversed|default_if_none:0 }}" aria-valuemin="0" aria-valuemax="100">
-          {% if percent_conversed > 10 %}Conversations{% endif %}
-        </div>
-      </div>
-      <div class="d-flex justify-content-between mt-2">
-        <span class="badge bg-primary">Sent</span>
-        <span class="badge bg-success">Accepted</span>
-        <span class="badge bg-warning text-dark">Conversations</span>
-      </div>
-    </div>
-  </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -391,4 +363,5 @@
       new bootstrap.Tooltip(tooltipTriggerEl)
     })pt>
   });dblock %}
-</script>{% endblock %}
+</script>
+{% endblock %}

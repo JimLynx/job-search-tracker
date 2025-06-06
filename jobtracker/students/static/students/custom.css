@@ -293,7 +293,9 @@ a:hover, .link-primary:hover {
   min-width: 180px;
   margin: 0.5rem;
 }
-
+    .section-toolbar .btn-success {
+    margin-bottom: 1rem !important;
+  }
 /* Modern tech login card */
 .custom-form-card {
   border-radius: 20px;
@@ -440,6 +442,65 @@ a:hover, .link-primary:hover {
   .dashboard-progress-row .progress,
   .dashboard-progress-row .badge-status {
     display: none !important;
+  }
+}
+
+/* Responsive Table Styles */
+@media (max-width: 991.98px) {
+  .responsive-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 1rem;
+    padding: 0 0.5rem;
+  }
+  .responsive-table thead {
+    display: none;
+  }
+  .responsive-table tbody,
+  .responsive-table tr,
+  .responsive-table td {
+    display: block;
+    width: 100%;
+  }
+  .responsive-table tr {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(30,41,59,0.06);
+    margin-bottom: 1.2rem;
+    padding: 1rem 1rem 0.5rem 1rem;
+    border: 1px solid #e5ebfa;
+  }
+  .responsive-table td {
+    padding: 0.35rem 0.25rem;
+    border: none;
+    position: relative;
+    text-align: left;
+    font-size: 1.05em;
+  }
+  .responsive-table td[data-label]:before {
+    content: attr(data-label) ": ";
+    font-weight: 500;
+    color: var(--neutral-400);
+    display: inline-block;
+    min-width: 90px;
+    font-size: 0.97em;
+    margin-right: 0.25em;
+    letter-spacing: 0.01em;
+  }
+  .responsive-table td:last-child {
+    padding-bottom: 1rem;
+    text-align: center;
+  }
+  .responsive-table td[data-label="Actions"] {
+    text-align: center;
+    padding-top: 0.7rem;
+  }
+  .responsive-table td[data-label="Actions"] .btn {
+    margin: 0 0.2rem 0.2rem 0.2rem;
+    min-width: 70px;
+  }
+  .compact-table tr {
+    padding: 0.7rem 0.5rem 0.3rem 0.5rem;
   }
 }
 

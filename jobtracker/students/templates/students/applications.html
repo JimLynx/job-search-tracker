@@ -32,7 +32,7 @@
 <form id="bulk-delete-form" method="post" action="{% url 'bulk_delete_applications' %}">
   {% csrf_token %}
   <div class="table-responsive">
-    <table class="table table-striped table-bordered table-hover align-middle">
+    <table class="table table-striped table-bordered table-hover align-middle responsive-table compact-table">
       <thead>
         <tr>
           <th><input type="checkbox" id="select-all"></th>
@@ -50,26 +50,26 @@
       <tbody>
         {% for app in applications %}
         <tr>
-          <td><input type="checkbox" name="selected_ids" value="{{ app.id }}"></td>
-          <td>{{ app.date_applied }}</td>
-          <td>{{ app.website }}</td>
-          <td>{{ app.job_title }}</td>
-          <td>{{ app.company_name }}</td>
-          <td>
+          <td data-label="Select"><input type="checkbox" name="selected_ids" value="{{ app.id }}"></td>
+          <td data-label="Date Applied">{{ app.date_applied }}</td>
+          <td data-label="Website">{{ app.website }}</td>
+          <td data-label="Job Title">{{ app.job_title }}</td>
+          <td data-label="Company Name">{{ app.company_name }}</td>
+          <td data-label="Application URL">
             {% if app.application_url %}
               <a href="{{ app.application_url }}" target="_blank">Link</a>
             {% endif %}
           </td>
-          <td>{{ app.contact }}</td>
-          <td>
+          <td data-label="Contact">{{ app.contact }}</td>
+          <td data-label="Response?">
             {% if app.response == 'yes' %}
               <span title="Response received">✅</span>
             {% else %}
               <span title="No response yet"><i class="bi bi-dash-circle text-secondary"></i></span>
             {% endif %}
           </td>
-          <td>{{ app.notes }}</td>
-          <td>
+          <td data-label="Notes">{{ app.notes }}</td>
+          <td data-label="Actions">
             <a href="{% url 'edit_application' app.pk %}" class="btn btn-sm btn-warning">Edit</a>
             <a href="{% url 'delete_application' app.pk %}" class="btn btn-sm btn-danger">Delete</a>
           </td>

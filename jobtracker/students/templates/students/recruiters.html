@@ -32,15 +32,14 @@
 <form id="bulk-delete-form" method="post" action="{% url 'bulk_delete_recruiters' %}">
   {% csrf_token %}
   <div class="table-responsive">
-    <table class="table table-striped table-bordered">
+    <table class="table table-striped table-bordered responsive-table compact-table">
       <thead>
         <tr>
           <th><input type="checkbox" id="select-all"></th>
-          <th>Date</th>
+          <th>Name</th>
           <th>Agency</th>
-          <th>Role</th>
-          <th>Contact</th>
-          <th>Stage</th>
+          <th>Email</th>
+          <th>Phone</th>
           <th>Notes</th>
           <th>Actions</th>
         </tr>
@@ -48,20 +47,19 @@
       <tbody>
         {% for recruiter in recruiters %}
         <tr>
-          <td><input type="checkbox" name="selected_ids" value="{{ recruiter.id }}"></td>
-          <td>{{ recruiter.date }}</td>
-          <td>{{ recruiter.agency }}</td>
-          <td>{{ recruiter.role }}</td>
-          <td>{{ recruiter.contact }}</td>
-          <td>{{ recruiter.stage }}</td>
-          <td>{{ recruiter.notes }}</td>
-          <td>
+          <td data-label="Select"><input type="checkbox" name="selected_ids" value="{{ recruiter.id }}"></td>
+          <td data-label="Name">{{ recruiter.name }}</td>
+          <td data-label="Agency">{{ recruiter.agency }}</td>
+          <td data-label="Email">{{ recruiter.email }}</td>
+          <td data-label="Phone">{{ recruiter.phone }}</td>
+          <td data-label="Notes">{{ recruiter.notes }}</td>
+          <td data-label="Actions">
             <a href="{% url 'edit_recruiter' recruiter.pk %}" class="btn btn-sm btn-warning">Edit</a>
             <a href="{% url 'delete_recruiter' recruiter.pk %}" class="btn btn-sm btn-danger">Delete</a>
           </td>
         </tr>
         {% empty %}
-        <tr><td colspan="8">No recruiter contacts yet.</td></tr>
+        <tr><td colspan="7">No recruiter contacts yet.</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -82,8 +80,13 @@
       <div class="modal-body">
         <form method="post" autocomplete="off">
           {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
           {{ form|crispy }}
-          <button type="submit" class="btn btn-success w-100">Add</button>
+          <button type="submit" class="btn btn-success w-100">Add Recruiter Contact</button>
         </form>
       </div>
     </div>
@@ -111,4 +114,5 @@
 
 {% include "students/includes/bulk_delete_toast.html" %}
 {% include "students/includes/bulk_delete_script.html" %}
+
 {% endblock %}
