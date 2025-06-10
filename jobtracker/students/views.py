@@ -1,12 +1,14 @@
-from datetime import date, datetime, timedelta
-import json
-
-from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import login, logout, get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Q, Sum, F, Value, IntegerField
-from django.shortcuts import render, redirect, get_object_or_404
-
+from django.views.generic import (
+    ListView, CreateView, UpdateView, DeleteView, TemplateView
+)
+from django.urls import reverse_lazy
+from django.db.models import Q
+from django.contrib import messages
+from datetime import date, datetime, timedelta
 from django.utils import timezone
 
 from .forms import (
@@ -16,10 +18,20 @@ from .forms import (
 )
 from .models import (
     StudentProfile, JobApplication, NetworkingContact, WeeklyActivityTarget,
-    DirectApproach, RecruiterContact, Interview, LinkedInPost, LinkedInConnection
+    DirectApproach, RecruiterContact, Interview, LinkedInPost, LinkedInConnection, Notification
 )
 
 User = get_user_model()
+
+def get_notification_context(request):
+    unread_notifications = request.user.notification_set.filter(read=False).count()
+    notifications = request.user.notification_set.order_by('-created_at')[:5]
+    return {
+        'unread_notifications': unread_notifications,
+        'notifications': notifications,
+    }
+
+# --- Profile and Auth Views (function-based for simplicity) ---
 
 def register(request):
     if request.method == 'POST':
@@ -56,6 +68,8 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+# --- Profile View (function-based for custom logic) ---
+
 @login_required
 def profile(request):
     profile, created = StudentProfile.objects.get_or_create(user=request.user)
@@ -67,139 +81,422 @@ def profile(request):
             return redirect('dashboard')
     else:
         form = StudentProfileForm(instance=profile)
-    return render(request, 'students/profile.html', {'form': form})
+    context = {'form': form}
+    context.update(get_notification_context(request))
+    return render(request, 'students/profile.html', context)
 
-@login_required
-def applications(request):
-    query = request.GET.get('q', '')
-    applications = JobApplication.objects.filter(user=request.user)
-    if query:
-        applications = applications.filter(
-            Q(company_name__icontains=query) |
-            Q(job_title__icontains=query) |
-            Q(notes__icontains=query)
+# --- CBV CRUD for JobApplication ---
+
+class JobApplicationListView(LoginRequiredMixin, ListView):
+    model = JobApplication
+    template_name = 'students/applications.html'
+    context_object_name = 'applications'
+
+    def get_queryset(self):
+        qs = super().get_queryset().filter(user=self.request.user)
+        q = self.request.GET.get('q')
+        if q:
+            qs = qs.filter(
+                Q(company_name__icontains=q) |
+                Q(job_title__icontains=q) |
+                Q(notes__icontains=q)
+            )
+        return qs.order_by('-date_applied')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = JobApplicationForm()
+        context['query'] = self.request.GET.get('q', '')
+        context.update(get_notification_context(self.request))
+        return context
+
+class JobApplicationCreateView(LoginRequiredMixin, CreateView):
+    model = JobApplication
+    form_class = JobApplicationForm
+    template_name = 'students/add_application.html'
+    success_url = reverse_lazy('applications')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+class JobApplicationUpdateView(LoginRequiredMixin, UpdateView):
+    model = JobApplication
+    form_class = JobApplicationForm
+    template_name = 'students/edit_application.html'
+    success_url = reverse_lazy('applications')
+
+    def get_queryset(self):
+        return JobApplication.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+class JobApplicationDeleteView(LoginRequiredMixin, DeleteView):
+    model = JobApplication
+    template_name = 'students/delete_application.html'
+    success_url = reverse_lazy('applications')
+
+    def get_queryset(self):
+        return JobApplication.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+# --- CBV CRUD for NetworkingContact ---
+
+class NetworkingContactListView(LoginRequiredMixin, ListView):
+    model = NetworkingContact
+    template_name = 'students/networking.html'
+    context_object_name = 'contacts'
+
+    def get_queryset(self):
+        qs = super().get_queryset().filter(user=self.request.user)
+        q = self.request.GET.get('q')
+        if q:
+            qs = qs.filter(
+                Q(contact_name__icontains=q) |
+                Q(company__icontains=q) |
+                Q(contact_role__icontains=q)
+            )
+        return qs.order_by('-request_sent')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = NetworkingContactForm()
+        context['query'] = self.request.GET.get('q', '')
+        context.update(get_notification_context(self.request))
+        return context
+
+class NetworkingContactCreateView(LoginRequiredMixin, CreateView):
+    model = NetworkingContact
+    form_class = NetworkingContactForm
+    template_name = 'students/add_contact.html'
+    success_url = reverse_lazy('networking')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+class NetworkingContactUpdateView(LoginRequiredMixin, UpdateView):
+    model = NetworkingContact
+    form_class = NetworkingContactForm
+    template_name = 'students/edit_contact.html'
+    success_url = reverse_lazy('networking')
+
+    def get_queryset(self):
+        return NetworkingContact.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+class NetworkingContactDeleteView(LoginRequiredMixin, DeleteView):
+    model = NetworkingContact
+    template_name = 'students/delete_contact.html'
+    success_url = reverse_lazy('networking')
+
+    def get_queryset(self):
+        return NetworkingContact.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+# --- Repeat for RecruiterContact, DirectApproach, Interview, LinkedInPost ---
+
+class RecruiterContactListView(LoginRequiredMixin, ListView):
+    model = RecruiterContact
+    template_name = 'students/recruiters.html'
+    context_object_name = 'recruiters'
+
+    def get_queryset(self):
+        qs = super().get_queryset().filter(user=self.request.user)
+        q = self.request.GET.get('q')
+        if q:
+            qs = qs.filter(
+                Q(role__icontains=q) |
+                Q(agency__icontains=q) |
+                Q(stage__icontains=q)
+            )
+        return qs.order_by('-date')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = RecruiterContactForm()
+        context['query'] = self.request.GET.get('q', '')
+        context.update(get_notification_context(self.request))
+        return context
+
+class RecruiterContactCreateView(LoginRequiredMixin, CreateView):
+    model = RecruiterContact
+    form_class = RecruiterContactForm
+    template_name = 'students/add_recruiter.html'
+    success_url = reverse_lazy('recruiters')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+class RecruiterContactUpdateView(LoginRequiredMixin, UpdateView):
+    model = RecruiterContact
+    form_class = RecruiterContactForm
+    template_name = 'students/edit_recruiter.html'
+    success_url = reverse_lazy('recruiters')
+
+    def get_queryset(self):
+        return RecruiterContact.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+class RecruiterContactDeleteView(LoginRequiredMixin, DeleteView):
+    model = RecruiterContact
+    template_name = 'students/delete_recruiter.html'
+    success_url = reverse_lazy('recruiters')
+
+    def get_queryset(self):
+        return RecruiterContact.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+# --- DirectApproach ---
+
+class DirectApproachListView(LoginRequiredMixin, ListView):
+    model = DirectApproach
+    template_name = 'students/direct_approach.html'
+    context_object_name = 'approaches'
+
+    def get_queryset(self):
+        qs = super().get_queryset().filter(user=self.request.user)
+        q = self.request.GET.get('q')
+        if q:
+            qs = qs.filter(
+                Q(targeting__icontains=q) |
+                Q(location__icontains=q) |
+                Q(contact__icontains=q)
+            )
+        return qs.order_by('-date')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = DirectApproachForm()
+        context['query'] = self.request.GET.get('q', '')
+        context.update(get_notification_context(self.request))
+        return context
+
+class DirectApproachCreateView(LoginRequiredMixin, CreateView):
+    model = DirectApproach
+    form_class = DirectApproachForm
+    template_name = 'students/add_direct_approach.html'
+    success_url = reverse_lazy('direct_approach')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+class DirectApproachUpdateView(LoginRequiredMixin, UpdateView):
+    model = DirectApproach
+    form_class = DirectApproachForm
+    template_name = 'students/edit_direct_approach.html'
+    success_url = reverse_lazy('direct_approach')
+
+    def get_queryset(self):
+        return DirectApproach.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+class DirectApproachDeleteView(LoginRequiredMixin, DeleteView):
+    model = DirectApproach
+    template_name = 'students/delete_direct_approach.html'
+    success_url = reverse_lazy('direct_approach')
+
+    def get_queryset(self):
+        return DirectApproach.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+# --- Interview ---
+
+class InterviewListView(LoginRequiredMixin, ListView):
+    model = Interview
+    template_name = 'students/interviews.html'
+    context_object_name = 'interviews'
+
+    def get_queryset(self):
+        qs = super().get_queryset().filter(user=self.request.user)
+        q = self.request.GET.get('q')
+        if q:
+            qs = qs.filter(
+                Q(role__icontains=q) |
+                Q(company__icontains=q) |
+                Q(contact__icontains=q)
+            )
+        return qs.order_by('-date')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = InterviewForm()
+        context['query'] = self.request.GET.get('q', '')
+        context.update(get_notification_context(self.request))
+        return context
+
+class InterviewCreateView(LoginRequiredMixin, CreateView):
+    model = Interview
+    form_class = InterviewForm
+    template_name = 'students/add_interview.html'
+    success_url = reverse_lazy('interviews')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        response = super().form_valid(form)
+        Notification.objects.create(
+            user=self.request.user,
+            message=f"Interview scheduled for {form.instance.role} at {form.instance.company} on {form.instance.date}.",
+            url="/interviews/"
         )
-    applications = applications.order_by('-date_applied')
-    if request.method == 'POST':
-        form = JobApplicationForm(request.POST)
-        if form.is_valid():
-            job_app = form.save(commit=False)
-            job_app.user = request.user
-            job_app.save()
-            messages.success(request, "Job application added successfully!")
-            return redirect('applications')
-        else:
-            messages.error(request, "Please correct the errors below.")
-    else:
-        form = JobApplicationForm()
-    return render(request, 'students/applications.html', {
-        'applications': applications,
-        'form': form,
-        'query': query,
-    })
+        return response
 
-@login_required
-def edit_application(request, pk):
-    application = get_object_or_404(JobApplication, pk=pk, user=request.user)
-    if request.method == 'POST':
-        form = JobApplicationForm(request.POST, instance=application)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Application updated successfully!")
-            return redirect('applications')
-    else:
-        form = JobApplicationForm(instance=application)
-    return render(request, 'students/edit_application.html', {'form': form})
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
 
-@login_required
-def delete_application(request, pk):
-    application = get_object_or_404(JobApplication, pk=pk, user=request.user)
-    if request.method == 'POST':
-        application.delete()
-        messages.success(request, "Application deleted successfully!")
-        return redirect('applications')
-    return render(request, 'students/delete_application.html', {'application': application})
+class InterviewUpdateView(LoginRequiredMixin, UpdateView):
+    model = Interview
+    form_class = InterviewForm
+    template_name = 'students/edit_interview.html'
+    success_url = reverse_lazy('interviews')
 
-@login_required
-def targets(request):
-    query = request.GET.get('q', '')
-    targets = WeeklyActivityTarget.objects.filter(user=request.user).order_by('activity')
-    for t in targets:
-        t.total_actual = (t.monday or 0) + (t.tuesday or 0) + (t.wednesday or 0) + (t.thursday or 0) + (t.friday or 0)
-    if request.method == 'POST':
-        form = WeeklyActivityTargetForm(request.POST)
-        if form.is_valid():
-            target = form.save(commit=False)
-            target.user = request.user
-            target.save()
-            return redirect('targets')
-    else:
-        form = WeeklyActivityTargetForm()
+    def get_queryset(self):
+        return Interview.objects.filter(user=self.request.user)
 
-    return render(request, 'students/targets.html', {
-        'targets': targets,
-        'form': form,
-        'query': query,
-    })
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
 
-@login_required
-def edit_target(request, pk):
-    target = get_object_or_404(WeeklyActivityTarget, pk=pk, user=request.user)
-    if request.method == 'POST':
-        form = WeeklyActivityTargetForm(request.POST, instance=target)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Target updated successfully!")
-            return redirect('targets')
-    else:
-        form = WeeklyActivityTargetForm(instance=target)
-    return render(request, 'students/edit_target.html', {'form': form, 'target': target})
+class InterviewDeleteView(LoginRequiredMixin, DeleteView):
+    model = Interview
+    template_name = 'students/delete_interview.html'
+    success_url = reverse_lazy('interviews')
 
-@login_required
-def delete_target(request, pk):
-    target = get_object_or_404(WeeklyActivityTarget, pk=pk, user=request.user)
-    if request.method == 'POST':
-        target.delete()
-        messages.success(request, "Target deleted successfully!")
-        return redirect('targets')
-    return render(request, 'students/delete_target.html', {'target': target})
+    def get_queryset(self):
+        return Interview.objects.filter(user=self.request.user)
 
-@login_required
-def networking(request):
-    query = request.GET.get('q', '')
-    contacts = NetworkingContact.objects.filter(user=request.user)
-    if query:
-        contacts = contacts.filter(
-            Q(contact_name__icontains=query) |
-            Q(company__icontains=query) |
-            Q(contact_role__icontains=query)
-        )
-    contacts = contacts.order_by('-request_sent')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
 
-    if request.method == 'POST':
-        form = NetworkingContactForm(request.POST)
-        if form.is_valid():
-            contact = form.save(commit=False)
-            contact.user = request.user
-            contact.save()
-            return redirect('networking')
-    else:
-        form = NetworkingContactForm()
+# --- LinkedInPost ---
 
-    return render(request, 'students/networking.html', {
-        'contacts': contacts,
-        'form': form,
-        'query': query,
-    })
+class LinkedInPostListView(LoginRequiredMixin, ListView):
+    model = LinkedInPost
+    template_name = 'students/linkedin_posts.html'
+    context_object_name = 'posts'
 
-def get_week_start(d):
-    """Return the Monday of the week for a given date."""
-    return d - timedelta(days=d.weekday())
+    def get_queryset(self):
+        qs = super().get_queryset().filter(user=self.request.user)
+        q = self.request.GET.get('q')
+        if q:
+            qs = qs.filter(
+                Q(subject__icontains=q) |
+                Q(post_type__icontains=q)
+            )
+        return qs.order_by('-date_posted')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = LinkedInPostForm()
+        context['query'] = self.request.GET.get('q', '')
+        context.update(get_notification_context(self.request))
+        return context
+
+class LinkedInPostCreateView(LoginRequiredMixin, CreateView):
+    model = LinkedInPost
+    form_class = LinkedInPostForm
+    template_name = 'students/add_linkedin_post.html'
+    success_url = reverse_lazy('linkedin_posts')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+class LinkedInPostUpdateView(LoginRequiredMixin, UpdateView):
+    model = LinkedInPost
+    form_class = LinkedInPostForm
+    template_name = 'students/edit_linkedin_post.html'
+    success_url = reverse_lazy('linkedin_posts')
+
+    def get_queryset(self):
+        return LinkedInPost.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+class LinkedInPostDeleteView(LoginRequiredMixin, DeleteView):
+    model = LinkedInPost
+    template_name = 'students/delete_linkedin_post.html'
+    success_url = reverse_lazy('linkedin_posts')
+
+    def get_queryset(self):
+        return LinkedInPost.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_notification_context(self.request))
+        return context
+
+# --- Other Views (dashboard, admin, etc.) can remain function-based for now ---
 
 @login_required
 def dashboard(request):
     today = timezone.localdate()
-    # Support ?week=YYYY-MM-DD for pagination
     week_str = request.GET.get('week')
     if week_str:
         week_start = datetime.strptime(week_str, "%Y-%m-%d").date()
@@ -230,9 +527,9 @@ def dashboard(request):
         'sent_count': sent_count,
         'accepted_count': accepted_count,
         'conversation_count': conversation_count,
-        'sent_target': 40,  # Set to 40
-        'accepted_target': 20,  # Set to 20
-        'conversation_target': 5,  # Set to 5
+        'sent_target': 40,
+        'accepted_target': 20,
+        'conversation_target': 5,
         'percent_sent': progress(sent_count, 40),
         'percent_accepted': progress(accepted_count, 20),
         'percent_conversed': progress(conversation_count, 5),
@@ -279,7 +576,7 @@ def dashboard(request):
             ).count(),
             target.direct_approach_target
         ),
-        # Recruiters and Interviews are now accumulative (all-time, not weekly)
+        # Recruiters and Interviews are accumulative (all-time)
         'num_recruiters': RecruiterContact.objects.filter(user=request.user).count(),
         'max_recruiters': target.recruiters_target,
         'recruiters_progress': progress(
@@ -313,53 +610,7 @@ def dashboard(request):
         'next_week': week_start + timedelta(days=7),
         'today': today,
     }
-
-    weeks = []
-    networking_counts = []
-    applications_counts = []
-    direct_counts = []
-    linkedin_counts = []
-
-    for i in range(6, 0, -1):
-        week = week_start - timedelta(days=7 * i)
-        week_end = week + timedelta(days=7)
-        weeks.append(week.strftime('%b %d'))
-        networking_counts.append(
-            NetworkingContact.objects.filter(
-                user=request.user,
-                request_sent__gte=week,
-                request_sent__lt=week_end
-            ).count()
-        )
-        applications_counts.append(
-            JobApplication.objects.filter(
-                user=request.user,
-                date_applied__gte=week,
-                date_applied__lt=week_end
-            ).count()
-        )
-        direct_counts.append(
-            DirectApproach.objects.filter(
-                user=request.user,
-                date__gte=week,
-                date__lt=week_end
-            ).count()
-        )
-        linkedin_counts.append(
-            LinkedInPost.objects.filter(
-                user=request.user,
-                date_posted__gte=week,
-                date_posted__lt=week_end
-            ).count()
-        )
-
-    context.update({
-        'weeks': json.dumps(weeks),
-        'networking_counts': json.dumps(networking_counts),
-        'applications_counts': json.dumps(applications_counts),
-        'direct_counts': json.dumps(direct_counts),
-        'linkedin_counts': json.dumps(linkedin_counts),
-    })
+    context.update(get_notification_context(request))
     return render(request, 'students/dashboard.html', context)
 
 @login_required
@@ -369,8 +620,10 @@ def delete_profile(request):
         logout(request)
         user.delete()
         messages.success(request, "Your profile has been deleted.")
-        return redirect('welcome')  # or your homepage
-    return render(request, 'students/delete_profile.html')
+        return redirect('welcome')
+    context = {}
+    context.update(get_notification_context(request))
+    return render(request, 'students/delete_profile.html', context)
 
 @login_required
 def direct_approach(request):
@@ -394,15 +647,18 @@ def direct_approach(request):
             return redirect('direct_approach')
     else:
         form = DirectApproachForm()
-
-    return render(request, 'students/direct_approach.html', {'approaches': approaches, 'form': form})
+    context = {'approaches': approaches, 'form': form}
+    context.update(get_notification_context(request))
+    return render(request, 'students/direct_approach.html', context)
 
 def tutorial(request):
     return render(request, 'students/tutorial.html')
 
 @login_required
 def welcome(request):
-    return render(request, 'students/welcome.html')
+    context = {}
+    context.update(get_notification_context(request))
+    return render(request, 'students/welcome.html', context)
 
 @login_required
 def edit_direct_approach(request, pk):
@@ -415,7 +671,9 @@ def edit_direct_approach(request, pk):
             return redirect('direct_approach')
     else:
         form = DirectApproachForm(instance=approach)
-    return render(request, 'students/edit_direct_approach.html', {'form': form, 'approach': approach})
+    context = {'form': form, 'approach': approach}
+    context.update(get_notification_context(request))
+    return render(request, 'students/edit_direct_approach.html', context)
 
 @login_required
 def delete_direct_approach(request, pk):
@@ -424,7 +682,9 @@ def delete_direct_approach(request, pk):
         approach.delete()
         messages.success(request, "Direct approach deleted successfully!")
         return redirect('direct_approach')
-    return render(request, 'students/delete_direct_approach.html', {'approach': approach})
+    context = {'approach': approach}
+    context.update(get_notification_context(request))
+    return render(request, 'students/delete_direct_approach.html', context)
 
 @login_required
 def recruiters(request):
@@ -450,12 +710,13 @@ def recruiters(request):
             messages.error(request, "Please correct the errors below.")
     else:
         form = RecruiterContactForm()
-
-    return render(request, 'students/recruiters.html', {
+    context = {
         'recruiters': recruiters,
         'form': form,
         'query': query,
-    })
+    }
+    context.update(get_notification_context(request))
+    return render(request, 'students/recruiters.html', context)
 
 @login_required
 def interviews(request):
@@ -475,11 +736,19 @@ def interviews(request):
             interview = form.save(commit=False)
             interview.user = request.user
             interview.save()
+            # Example: Create notification for interview
+            Notification.objects.create(
+                user=request.user,
+                message=f"Interview scheduled for {interview.role} at {interview.company} on {interview.date}.",
+                url="/interviews/"
+            )
+            messages.success(request, "Interview added and reminder created!")
             return redirect('interviews')
     else:
         form = InterviewForm()
-
-    return render(request, 'students/interviews.html', {'interviews': interviews, 'form': form})
+    context = {'interviews': interviews, 'form': form}
+    context.update(get_notification_context(request))
+    return render(request, 'students/interviews.html', context)
 
 @login_required
 def edit_interview(request, pk):
@@ -492,7 +761,9 @@ def edit_interview(request, pk):
             return redirect('interviews')
     else:
         form = InterviewForm(instance=interview)
-    return render(request, 'students/edit_interview.html', {'form': form, 'interview': interview})
+    context = {'form': form, 'interview': interview}
+    context.update(get_notification_context(request))
+    return render(request, 'students/edit_interview.html', context)
 
 @login_required
 def delete_interview(request, pk):
@@ -501,7 +772,9 @@ def delete_interview(request, pk):
         interview.delete()
         messages.success(request, "Interview deleted successfully!")
         return redirect('interviews')
-    return render(request, 'students/delete_interview.html', {'interview': interview})
+    context = {'interview': interview}
+    context.update(get_notification_context(request))
+    return render(request, 'students/delete_interview.html', context)
 
 @login_required
 def edit_recruiter(request, pk):
@@ -514,7 +787,9 @@ def edit_recruiter(request, pk):
             return redirect('recruiters')
     else:
         form = RecruiterContactForm(instance=recruiter)
-    return render(request, 'students/edit_recruiter.html', {'form': form, 'recruiter': recruiter})
+    context = {'form': form, 'recruiter': recruiter}
+    context.update(get_notification_context(request))
+    return render(request, 'students/edit_recruiter.html', context)
 
 @login_required
 def delete_recruiter(request, pk):
@@ -523,7 +798,9 @@ def delete_recruiter(request, pk):
         recruiter.delete()
         messages.success(request, "Recruiter contact deleted successfully!")
         return redirect('recruiters')
-    return render(request, 'students/delete_recruiter.html', {'recruiter': recruiter})
+    context = {'recruiter': recruiter}
+    context.update(get_notification_context(request))
+    return render(request, 'students/delete_recruiter.html', context)
 
 @login_required
 def linkedin_posts(request):
@@ -548,12 +825,13 @@ def linkedin_posts(request):
             messages.error(request, "Please correct the errors below.")
     else:
         form = LinkedInPostForm()
-
-    return render(request, 'students/linkedin_posts.html', {
+    context = {
         'posts': posts,
         'form': form,
         'query': query,
-    })
+    }
+    context.update(get_notification_context(request))
+    return render(request, 'students/linkedin_posts.html', context)
 
 @login_required
 def edit_linkedin_post(request, pk):
@@ -566,7 +844,9 @@ def edit_linkedin_post(request, pk):
             return redirect('linkedin_posts')
     else:
         form = LinkedInPostForm(instance=post)
-    return render(request, 'students/edit_linkedin_post.html', {'form': form, 'post': post})
+    context = {'form': form, 'post': post}
+    context.update(get_notification_context(request))
+    return render(request, 'students/edit_linkedin_post.html', context)
 
 @login_required
 def delete_linkedin_post(request, pk):
@@ -575,27 +855,29 @@ def delete_linkedin_post(request, pk):
         post.delete()
         messages.success(request, "LinkedIn post deleted successfully!")
         return redirect('linkedin_posts')
-    return render(request, 'students/delete_linkedin_post.html', {'post': post})
+    context = {'post': post}
+    context.update(get_notification_context(request))
+    return render(request, 'students/delete_linkedin_post.html', context)
 
 @login_required
 def networking_questions(request):
-    return render(request, 'students/networking_questions.html')
+    context = {}
+    context.update(get_notification_context(request))
+    return render(request, 'students/networking_questions.html', context)
 
 @user_passes_test(lambda u: u.is_staff)
 def admin_dashboard(request):
-    # Gather all students' progress data
     students = User.objects.filter(is_staff=False)
     progress_data = []
     for student in students:
-        # Calculate progress for each student (example)
         num_targets = WeeklyActivityTarget.objects.filter(user=student).count()
-        # ...repeat for other metrics...
         progress_data.append({
             'student': student,
             'num_targets': num_targets,
-            # ...other metrics...
         })
-    return render(request, 'students/admin_dashboard.html', {'progress_data': progress_data})
+    context = {'progress_data': progress_data}
+    context.update(get_notification_context(request))
+    return render(request, 'students/admin_dashboard.html', context)
 
 @login_required
 def bulk_delete_applications(request):
@@ -650,7 +932,9 @@ def edit_contact(request, pk):
             return redirect('networking')
     else:
         form = NetworkingContactForm(instance=contact)
-    return render(request, 'students/edit_contact.html', {'form': form, 'contact': contact})
+    context = {'form': form, 'contact': contact}
+    context.update(get_notification_context(request))
+    return render(request, 'students/edit_contact.html', context)
 
 @login_required
 def delete_contact(request, pk):
@@ -659,7 +943,9 @@ def delete_contact(request, pk):
         contact.delete()
         messages.success(request, "Contact deleted successfully!")
         return redirect('networking')
-    return render(request, 'students/delete_contact.html', {'contact': contact})
+    context = {'contact': contact}
+    context.update(get_notification_context(request))
+    return render(request, 'students/delete_contact.html', context)
 
 @login_required
 def edit_weekly_targets(request):
@@ -675,7 +961,9 @@ def edit_weekly_targets(request):
             return redirect('dashboard')
     else:
         form = WeeklyActivityTargetForm(instance=target)
-    return render(request, 'students/edit_weekly_targets.html', {'form': form, 'week_start': week_start})
+    context = {'form': form, 'week_start': week_start}
+    context.update(get_notification_context(request))
+    return render(request, 'students/edit_weekly_targets.html', context)
 
 def add_contact(request):
     if request.method == 'POST':
@@ -688,5 +976,189 @@ def add_contact(request):
             messages.error(request, "Please correct the errors below.")
     else:
         form = NetworkingContactForm()
-    return render(request, 'students/add_contact.html', {'form': form})
+    context = {'form': form}
+    context.update(get_notification_context(request))
+    return render(request, 'students/add_contact.html', context)
+
+from django.views.generic import TemplateView
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required, user_passes_test
+
+class DashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'students/dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        from datetime import datetime, timedelta
+        from django.utils import timezone
+
+        context = super().get_context_data(**kwargs)
+        request = self.request
+        today = timezone.localdate()
+        week_str = request.GET.get('week')
+        if week_str:
+            week_start = datetime.strptime(week_str, "%Y-%m-%d").date()
+        else:
+            week_start = today - timedelta(days=today.weekday())
+        week_start_dt = timezone.make_aware(datetime.combine(week_start, datetime.min.time()))
+        week_end_dt = timezone.make_aware(datetime.combine(week_start + timedelta(days=7), datetime.min.time()))
+        target, _ = WeeklyActivityTarget.objects.get_or_create(user=request.user, week_start=week_start)
+
+        # Networking metrics
+        contacts = NetworkingContact.objects.filter(
+            user=request.user,
+            request_sent__gte=week_start,
+            request_sent__lt=week_start + timedelta(days=7)
+        )
+        num_contacts = contacts.count()
+        sent_count = num_contacts
+        accepted_count = contacts.filter(accepted=True).count()
+        conversation_count = contacts.filter(conversation=True).count()
+
+        def progress(actual, target):
+            return int(min((actual / target) * 100, 100)) if target else 0
+
+        context.update({
+            'num_contacts': num_contacts,
+            'max_contacts': target.networking_contacts_target,
+            'networking_progress': progress(num_contacts, target.networking_contacts_target),
+            'sent_count': sent_count,
+            'accepted_count': accepted_count,
+            'conversation_count': conversation_count,
+            'sent_target': 40,
+            'accepted_target': 20,
+            'conversation_target': 5,
+            'percent_sent': progress(sent_count, 40),
+            'percent_accepted': progress(accepted_count, 20),
+            'percent_conversed': progress(conversation_count, 5),
+
+            'num_applications': JobApplication.objects.filter(
+                user=request.user,
+                date_applied__gte=week_start,
+                date_applied__lt=week_start + timedelta(days=7)
+            ).count(),
+            'max_applications': target.applications_target,
+            'applications_progress': progress(
+                JobApplication.objects.filter(
+                    user=request.user,
+                    date_applied__gte=week_start,
+                    date_applied__lt=week_start + timedelta(days=7)
+                ).count(),
+                target.applications_target
+            ),
+            'num_linkedin_connections': LinkedInConnection.objects.filter(
+                user=request.user,
+                created_at__gte=week_start_dt,
+                created_at__lt=week_end_dt
+            ).count(),
+            'max_linkedin_connections': target.linkedin_connections_target,
+            'linkedin_connections_progress': progress(
+                LinkedInConnection.objects.filter(
+                    user=request.user,
+                    created_at__gte=week_start_dt,
+                    created_at__lt=week_end_dt
+                ).count(),
+                target.linkedin_connections_target
+            ),
+            'num_direct_approach': DirectApproach.objects.filter(
+                user=request.user,
+                date__gte=week_start,
+                date__lt=week_start + timedelta(days=7)
+            ).count(),
+            'max_direct_approach': target.direct_approach_target,
+            'direct_approach_progress': progress(
+                DirectApproach.objects.filter(
+                    user=request.user,
+                    date__gte=week_start,
+                    date__lt=week_start + timedelta(days=7)
+                ).count(),
+                target.direct_approach_target
+            ),
+            # Recruiters and Interviews are accumulative (all-time)
+            'num_recruiters': RecruiterContact.objects.filter(user=request.user).count(),
+            'max_recruiters': target.recruiters_target,
+            'recruiters_progress': progress(
+                RecruiterContact.objects.filter(user=request.user).count(),
+                target.recruiters_target
+            ),
+            'num_interviews': Interview.objects.filter(user=request.user).count(),
+            'max_interviews': target.interviews_target,
+            'interviews_progress': progress(
+                Interview.objects.filter(user=request.user).count(),
+                target.interviews_target
+            ),
+            'num_linkedin_posts': LinkedInPost.objects.filter(
+                user=request.user,
+                date_posted__gte=week_start,
+                date_posted__lt=week_start + timedelta(days=7)
+            ).count(),
+            'max_linkedin_posts': target.linkedin_posts_target,
+            'linkedin_posts_progress': progress(
+                LinkedInPost.objects.filter(
+                    user=request.user,
+                    date_posted__gte=week_start,
+                    date_posted__lt=week_start + timedelta(days=7)
+                ).count(),
+                target.linkedin_posts_target
+            ),
+            'recent_applications': JobApplication.objects.filter(user=request.user).order_by('-date_applied')[:5],
+            'week_start': week_start,
+            'week_start_display': week_start.strftime('%B %d, %Y'),
+            'prev_week': week_start - timedelta(days=7),
+            'next_week': week_start + timedelta(days=7),
+            'today': today,
+        })
+        # --- New: Weekly Overview Data ---
+        list_of_weeks = [today - timedelta(weeks=i) for i in range(4)]
+        list_of_week_labels = [week.strftime('%Y-%m-%d') for week in list_of_weeks]
+
+        context['weeks'] = list_of_week_labels  # e.g. ['2025-05-01', '2025-05-08', ...]
+        context['networking_counts'] = [
+            NetworkingContact.objects.filter(
+                user=request.user,
+                request_sent__gte=week,
+                request_sent__lt=week + timedelta(days=7)
+            ).count() for week in list_of_weeks
+        ]  # e.g. [2, 4, 3, ...]
+        context['applications_counts'] = [
+            JobApplication.objects.filter(
+                user=request.user,
+                date_applied__gte=week,
+                date_applied__lt=week + timedelta(days=7)
+            ).count() for week in list_of_weeks
+        ]
+        context['direct_counts'] = [
+            DirectApproach.objects.filter(
+                user=request.user,
+                date__gte=week,
+                date__lt=week + timedelta(days=7)
+            ).count() for week in list_of_weeks
+        ]
+        context['linkedin_counts'] = [
+            LinkedInPost.objects.filter(
+                user=request.user,
+                date_posted__gte=week,
+                date_posted__lt=week + timedelta(days=7)
+            ).count() for week in list_of_weeks
+        ]
+
+        context.update(get_notification_context(request))
+        return context
+
+@method_decorator(user_passes_test(lambda u: u.is_staff), name='dispatch')
+class AdminDashboardView(TemplateView):
+    template_name = 'students/admin_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        students = User.objects.filter(is_staff=False)
+        progress_data = []
+        for student in students:
+            num_targets = WeeklyActivityTarget.objects.filter(user=student).count()
+            progress_data.append({
+                'student': student,
+                'num_targets': num_targets,
+            })
+        context['progress_data'] = progress_data
+        context.update(get_notification_context(self.request))
+        return context
 

@@ -1,6 +1,9 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django import forms
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -150,3 +153,13 @@ class NetworkingContactForm(forms.ModelForm):
             'accepted', 'accepted_date', 'conversation', 'conversation_date',
             'outcome', 'notes'
         ]
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    url = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user.email}: {self.message[:50]}"

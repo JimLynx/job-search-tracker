@@ -72,6 +72,36 @@
   </div>
 </nav>
 {% endblock %}
+
+<!-- Notifications dropdown below navbar, above main content -->
+{% if user.is_authenticated %}
+<div class="container mb-3">
+  <div class="d-flex justify-content-end">
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary dropdown-toggle position-relative" type="button" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-bell"></i>
+        Notifications
+        {% if unread_notifications %}
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ unread_notifications }}
+            <span class="visually-hidden">unread notifications</span>
+          </span>
+        {% endif %}
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="notificationsDropdown">
+        {% for n in notifications %}
+          <li>
+            <a class="dropdown-item{% if not n.read %} fw-bold{% endif %}" href="{{ n.url }}">{{ n.message }}</a>
+          </li>
+        {% empty %}
+          <li><span class="dropdown-item">No notifications</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 <div class="container">
     {% if messages %}
       <div class="container mt-3">
