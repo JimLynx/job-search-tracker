@@ -1,17 +1,22 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from datetime import date, datetime, timedelta
+import json
+
+from django.contrib import messages
 from django.contrib.auth import login, logout, get_user_model
-from .forms import StudentProfileForm, JobApplicationForm, WeeklyActivityTargetForm, NetworkingContactForm, EmailAuthenticationForm, DirectApproachForm, RecruiterContactForm, InterviewForm, LinkedInPostForm, CustomUserCreationForm
-from .models import StudentProfile, JobApplication, NetworkingContact, WeeklyActivityTarget, DirectApproach, RecruiterContact, Interview, LinkedInPost, LinkedInConnection
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q, Sum, F, Value, IntegerField
-from django.contrib import messages
-from datetime import date, datetime, timedelta
+from django.shortcuts import render, redirect, get_object_or_404
+
 from django.utils import timezone
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+
+from .forms import (
+    StudentProfileForm, JobApplicationForm, WeeklyActivityTargetForm,
+    NetworkingContactForm, EmailAuthenticationForm, DirectApproachForm,
+    RecruiterContactForm, InterviewForm, LinkedInPostForm, CustomUserCreationForm
+)
 from .models import (
-    WeeklyActivityTarget, NetworkingContact, JobApplication,
-    DirectApproach, RecruiterContact, Interview, LinkedInPost
+    StudentProfile, JobApplication, NetworkingContact, WeeklyActivityTarget,
+    DirectApproach, RecruiterContact, Interview, LinkedInPost, LinkedInConnection
 )
 
 User = get_user_model()
@@ -274,32 +279,17 @@ def dashboard(request):
             ).count(),
             target.direct_approach_target
         ),
-        'num_recruiters': RecruiterContact.objects.filter(
-            user=request.user,
-            date__gte=week_start,
-            date__lt=week_start + timedelta(days=7)
-        ).count(),
+        # Recruiters and Interviews are now accumulative (all-time, not weekly)
+        'num_recruiters': RecruiterContact.objects.filter(user=request.user).count(),
         'max_recruiters': target.recruiters_target,
         'recruiters_progress': progress(
-            RecruiterContact.objects.filter(
-                user=request.user,
-                date__gte=week_start,
-                date__lt=week_start + timedelta(days=7)
-            ).count(),
+            RecruiterContact.objects.filter(user=request.user).count(),
             target.recruiters_target
         ),
-        'num_interviews': Interview.objects.filter(
-            user=request.user,
-            date__gte=week_start,
-            date__lt=week_start + timedelta(days=7)
-        ).count(),
+        'num_interviews': Interview.objects.filter(user=request.user).count(),
         'max_interviews': target.interviews_target,
         'interviews_progress': progress(
-            Interview.objects.filter(
-                user=request.user,
-                date__gte=week_start,
-                date__lt=week_start + timedelta(days=7)
-            ).count(),
+            Interview.objects.filter(user=request.user).count(),
             target.interviews_target
         ),
         'num_linkedin_posts': LinkedInPost.objects.filter(
@@ -323,6 +313,53 @@ def dashboard(request):
         'next_week': week_start + timedelta(days=7),
         'today': today,
     }
+
+    weeks = []
+    networking_counts = []
+    applications_counts = []
+    direct_counts = []
+    linkedin_counts = []
+
+    for i in range(6, 0, -1):
+        week = week_start - timedelta(days=7 * i)
+        week_end = week + timedelta(days=7)
+        weeks.append(week.strftime('%b %d'))
+        networking_counts.append(
+            NetworkingContact.objects.filter(
+                user=request.user,
+                request_sent__gte=week,
+                request_sent__lt=week_end
+            ).count()
+        )
+        applications_counts.append(
+            JobApplication.objects.filter(
+                user=request.user,
+                date_applied__gte=week,
+                date_applied__lt=week_end
+            ).count()
+        )
+        direct_counts.append(
+            DirectApproach.objects.filter(
+                user=request.user,
+                date__gte=week,
+                date__lt=week_end
+            ).count()
+        )
+        linkedin_counts.append(
+            LinkedInPost.objects.filter(
+                user=request.user,
+                date_posted__gte=week,
+                date_posted__lt=week_end
+            ).count()
+        )
+
+    context.update({
+        'weeks': json.dumps(weeks),
+        'networking_counts': json.dumps(networking_counts),
+        'applications_counts': json.dumps(applications_counts),
+        'direct_counts': json.dumps(direct_counts),
+        'linkedin_counts': json.dumps(linkedin_counts),
+    })
     return render(request, 'students/dashboard.html', context)
 
 @login_required
@@ -559,10 +596,6 @@ def admin_dashboard(request):
             # ...other metrics...
         })
     return render(request, 'students/admin_dashboard.html', {'progress_data': progress_data})
-
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
-from .models import JobApplication
 
 @login_required
 def bulk_delete_applications(request):

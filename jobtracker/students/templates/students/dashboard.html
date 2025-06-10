@@ -309,7 +309,7 @@
           <i class="bi bi-person-badge me-2"></i>
           <strong>Recruiters</strong>
           <span data-bs-toggle="tooltip" data-bs-placement="top"
-            title="Number of recruiter contacts you received this week." class="ms-2">
+            title="Total recruiter contacts received (all time)." class="ms-2">
             <i class="bi bi-info-circle" style="cursor:pointer;"></i>
           </span>
         </span>
@@ -327,7 +327,7 @@
           <i class="bi bi-chat-dots me-2"></i>
           <strong>Interviews</strong>
           <span data-bs-toggle="tooltip" data-bs-placement="top"
-            title="Number of interviews you were invited to this week." class="ms-2">
+            title="Total interviews invited to (all time)." class="ms-2">
             <i class="bi bi-info-circle" style="cursor:pointer;"></i>
           </span>
         </span>
@@ -350,18 +350,78 @@
     {% endfor %}
   </ul>
 
+  <!-- Weekly Progress Overview Chart -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Weekly Progress Overview</h5>
+      <canvas id="progressChart" height="100"></canvas>
+    </div>
+  </div>
+
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    // Enable Bootstrap tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-      new bootstrap.Tooltip(tooltipTriggerEl)
-    })pt>
-  });dblock %}
+document.addEventListener("DOMContentLoaded", function () {
+  // Enable Bootstrap tooltips
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+    new bootstrap.Tooltip(tooltipTriggerEl)
+  });
+
+  // Chart.js Progress Chart
+  var ctx = document.getElementById('progressChart').getContext('2d');
+  var progressChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: {{ weeks|safe }},
+      datasets: [
+        {
+          label: 'Networking',
+          data: {{ networking_counts|safe }},
+          borderColor: '#0d6efd',
+          backgroundColor: 'rgba(13,110,253,0.1)',
+          fill: true,
+          tension: 0.3
+        },
+        {
+          label: 'Applications',
+          data: {{ applications_counts|safe }},
+          borderColor: '#198754',
+          backgroundColor: 'rgba(25,135,84,0.1)',
+          fill: true,
+          tension: 0.3
+        },
+        {
+          label: 'Direct Approach',
+          data: {{ direct_counts|safe }},
+          borderColor: '#fd7e14',
+          backgroundColor: 'rgba(253,126,20,0.1)',
+          fill: true,
+          tension: 0.3
+        },
+        {
+          label: 'LinkedIn Posts',
+          data: {{ linkedin_counts|safe }},
+          borderColor: '#0a66c2',
+          backgroundColor: 'rgba(10,102,194,0.1)',
+          fill: true,
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' },
+        title: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: true, stepSize: 1 }
+      }
+    }
+  });
+});
 </script>
 {% endblock %}
