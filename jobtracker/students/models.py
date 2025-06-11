@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django import forms
 from django.contrib.auth import get_user_model
+from django.conf import settings
+from datetime import timedelta
 
 User = get_user_model()
 
@@ -13,20 +15,6 @@ class StudentProfile(models.Model):
 
     def __str__(self):
         return self.user.username
-
-class JobApplication(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    date_applied = models.DateField()
-    website = models.CharField(max_length=255)
-    job_title = models.CharField(max_length=255)
-    company_name = models.CharField(max_length=255)
-    application_url = models.URLField(blank=True, null=True)
-    contact = models.CharField(max_length=255, blank=True)
-    response = models.CharField(max_length=10, choices=[('yes', 'Yes'), ('not_yet', 'Not yet')], default='not_yet')
-    notes = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"{self.company_name} - {self.job_title}"
 
 class NetworkingContact(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -44,23 +32,37 @@ class NetworkingContact(models.Model):
     def __str__(self):
         return f"{self.contact_name} ({self.company})"
 
-class WeeklyActivityTarget(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    week_start = models.DateField()  # Monday of the week
-    applications_target = models.PositiveIntegerField(default=10)
-    networking_contacts_target = models.PositiveIntegerField(default=40)
-    linkedin_connections_target = models.PositiveIntegerField(default=20)
-    direct_approach_target = models.PositiveIntegerField(default=5)
-    linkedin_posts_target = models.PositiveIntegerField(default=1)
-    recruiters_target = models.PositiveIntegerField(default=0)
-    interviews_target = models.PositiveIntegerField(default=0)
+    @classmethod
+    def count_for_week(cls, user, week_start):
+        week_end = week_start + timedelta(days=7)
+        return cls.objects.filter(
+            user=user,
+            request_sent__gte=week_start,
+            request_sent__lt=week_end
+        ).count()
 
-    class Meta:
-        unique_together = ('user', 'week_start')
-        ordering = ['-week_start']
+class JobApplication(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date_applied = models.DateField()
+    website = models.CharField(max_length=255)
+    job_title = models.CharField(max_length=255)
+    company_name = models.CharField(max_length=255)
+    application_url = models.URLField(blank=True, null=True)
+    contact = models.CharField(max_length=255, blank=True)
+    response = models.CharField(max_length=10, choices=[('yes', 'Yes'), ('not_yet', 'Not yet')], default='not_yet')
+    notes = models.TextField(blank=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.week_start}"
+        return f"{self.company_name} - {self.job_title}"
+
+    @classmethod
+    def count_for_week(cls, user, week_start):
+        week_end = week_start + timedelta(days=7)
+        return cls.objects.filter(
+            user=user,
+            date_applied__gte=week_start,
+            date_applied__lt=week_end
+        ).count()
 
 class DirectApproach(models.Model):
     REACHED_OUT_CHOICES = [
@@ -80,6 +82,15 @@ class DirectApproach(models.Model):
 
     def __str__(self):
         return f"{self.targeting} - {self.contact}"
+
+    @classmethod
+    def count_for_week(cls, user, week_start):
+        week_end = week_start + timedelta(days=7)
+        return cls.objects.filter(
+            user=user,
+            date__gte=week_start,
+            date__lt=week_end
+        ).count()
 
 class RecruiterContact(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -140,6 +151,15 @@ class LinkedInPost(models.Model):
     def __str__(self):
         return f"{self.subject} ({self.get_post_type_display()}) - {self.date_posted}"
 
+    @classmethod
+    def count_for_week(cls, user, week_start):
+        week_end = week_start + timedelta(days=7)
+        return cls.objects.filter(
+            user=user,
+            date_posted__gte=week_start,
+            date_posted__lt=week_end
+        ).count()
+
 class LinkedInConnection(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -163,3 +183,17 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.user.email}: {self.message[:50]}"
+
+class WeeklyActivityTarget(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    week_start = models.DateField()
+    networking_contacts_target = models.PositiveIntegerField(default=0)
+    applications_target = models.PositiveIntegerField(default=0)
+    direct_approach_target = models.PositiveIntegerField(default=0)
+    recruiters_target = models.PositiveIntegerField(default=0)
+    interviews_target = models.PositiveIntegerField(default=0)
+    linkedin_posts_target = models.PositiveIntegerField(default=0)
+    linkedin_connections_target = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'week_start')

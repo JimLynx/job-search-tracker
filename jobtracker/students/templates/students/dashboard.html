@@ -371,10 +371,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Chart.js Progress Chart
   var ctx = document.getElementById('progressChart').getContext('2d');
+  var weekDates = {{ week_dates|safe }};
+  var weekNumbers = {{ week_numbers|safe }};
+  var labels = weekDates.map(function(date, i) {
+    return [date, weekNumbers[i]];
+  });
+
   var progressChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: {{ weeks|safe }},
+      labels: labels,
       datasets: [
         {
           label: 'Networking',

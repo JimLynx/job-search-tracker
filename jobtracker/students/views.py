@@ -1107,39 +1107,36 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'next_week': week_start + timedelta(days=7),
             'today': today,
         })
-        # --- New: Weekly Overview Data ---
-        list_of_weeks = [today - timedelta(weeks=i) for i in range(4)]
-        list_of_week_labels = [week.strftime('%Y-%m-%d') for week in list_of_weeks]
+        # --- New: Weekly Overview Data (reverse order, add week numbers) ---
+        this_monday = today - timedelta(days=today.weekday())
+        list_of_weeks = [this_monday - timedelta(weeks=i) for i in range(3, -1, -1)]  # always Mondays
 
-        context['weeks'] = list_of_week_labels  # e.g. ['2025-05-01', '2025-05-08', ...]
-        context['networking_counts'] = [
-            NetworkingContact.objects.filter(
-                user=request.user,
-                request_sent__gte=week,
-                request_sent__lt=week + timedelta(days=7)
-            ).count() for week in list_of_weeks
-        ]  # e.g. [2, 4, 3, ...]
-        context['applications_counts'] = [
-            JobApplication.objects.filter(
-                user=request.user,
-                date_applied__gte=week,
-                date_applied__lt=week + timedelta(days=7)
-            ).count() for week in list_of_weeks
+        week_dates = [week.strftime('%Y-%m-%d') for week in list_of_weeks]
+        week_numbers = [f"Week {idx+1}" for idx in range(len(list_of_weeks))]
+
+        networking_counts = [
+            NetworkingContact.count_for_week(request.user, week)
+            for week in list_of_weeks
         ]
-        context['direct_counts'] = [
-            DirectApproach.objects.filter(
-                user=request.user,
-                date__gte=week,
-                date__lt=week + timedelta(days=7)
-            ).count() for week in list_of_weeks
+        applications_counts = [
+            JobApplication.count_for_week(request.user, week)
+            for week in list_of_weeks
         ]
-        context['linkedin_counts'] = [
-            LinkedInPost.objects.filter(
-                user=request.user,
-                date_posted__gte=week,
-                date_posted__lt=week + timedelta(days=7)
-            ).count() for week in list_of_weeks
+        direct_counts = [
+            DirectApproach.count_for_week(request.user, week)
+            for week in list_of_weeks
         ]
+        linkedin_counts = [
+            LinkedInPost.count_for_week(request.user, week)
+            for week in list_of_weeks
+        ]
+
+        context['week_dates'] = week_dates
+        context['week_numbers'] = week_numbers
+        context['networking_counts'] = networking_counts
+        context['applications_counts'] = applications_counts
+        context['direct_counts'] = direct_counts
+        context['linkedin_counts'] = linkedin_counts
 
         context.update(get_notification_context(request))
         return context
